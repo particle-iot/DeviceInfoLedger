@@ -1,0 +1,4 @@
+firmware*.bin
+.vscode
+.DS_Store
+
