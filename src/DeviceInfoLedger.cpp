@@ -20,6 +20,7 @@ DeviceInfoLedger::~DeviceInfoLedger() {
 }
 
 void DeviceInfoLedger::setup() {
+#ifndef UNITTEST
     if (setupComplete) {
         // Cannot call setup more than once
         return;
@@ -102,10 +103,12 @@ void DeviceInfoLedger::setup() {
     }
 
     setupComplete = true;
+#endif // UNITTEST
 
 }
 
 void DeviceInfoLedger::loop() {
+#ifndef UNITTEST
 
     if (Network.ready()) {
         if (!isNetworkConnected) {
@@ -163,9 +166,9 @@ void DeviceInfoLedger::loop() {
             writeToConnectionLog = true;
         }
     }
-
-
+#endif // UNITTEST
 }
+
 
 Variant DeviceInfoLedger::getConfigVariant(const char *key, Variant defaultValue) const {
     Variant result = defaultValue;
@@ -175,18 +178,19 @@ Variant DeviceInfoLedger::getConfigVariant(const char *key, Variant defaultValue
         _deviceInfoLog.trace("device override key %s", key);
     }
     else
-    if (localConfig.has(key)) {
-        result  = localConfig.get(key);
-        _deviceInfoLog.trace("localConfig key %s", key);
-    }
-    else
     if (defaultConfig.has(key)) {
         result  = defaultConfig.get(key);
         _deviceInfoLog.trace("defaultConfig key %s", key);
     }
+    else
+    if (localConfig.has(key)) {
+        result  = localConfig.get(key);
+        _deviceInfoLog.trace("localConfig key %s", key);
+    }
 
     return result;
 }
+
 
 void DeviceInfoLedger::forEachConfigArray(const char *key, std::function<void(const Variant &el)> fn) const {
 
@@ -199,6 +203,24 @@ void DeviceInfoLedger::forEachConfigArray(const char *key, std::function<void(co
             }
         }
     }
+}
+bool DeviceInfoLedger::setLocalConfigLogLevel(LogLevel level, LogCategoryFilters filters) {
+    bool result;
+    
+    result = setLocalConfigString("logLevel", logLevelToString(level));
+
+    Variant array;
+    for(LogCategoryFilter &filter: filters) {
+        Variant entry;
+        entry.set("category", filter.category());
+        entry.set("level", logLevelToString(filter.level()));
+        array.append(entry);
+    }
+    if (array.isArray()) {
+        result = setLocalConfigVariant("logFilters", array);
+    }
+
+    return result;
 }
 
 
@@ -223,6 +245,42 @@ void DeviceInfoLedger::updateConfig() {
     }
     connectionLogOffset = 0;
 
+}
+
+const char *DeviceInfoLedger::logLevelToString(LogLevel level) const {
+    const char *levelName = "NONE";
+    switch(level) {
+        // LOG_LEVEL_ALL has the same numeric value (1) as LOG_LEVEL_TRACE
+        /*
+        case LOG_LEVEL_ALL:
+            levelName = "ALL";
+            break;
+        */
+
+        case LOG_LEVEL_TRACE:
+            levelName = "TRACE";
+            break;
+
+        case LOG_LEVEL_INFO:
+            levelName = "INFO";
+            break;
+
+        case LOG_LEVEL_WARN:
+            levelName = "WARN";
+            break;
+
+        case LOG_LEVEL_ERROR:
+            levelName = "ERROR";
+            break;
+
+        case LOG_LEVEL_PANIC:
+            levelName = "PANIC";
+            break;
+
+        default:
+            break;
+    }    
+    return levelName;
 }
 
 LogLevel DeviceInfoLedger::stringToLogLevel(const char *levelStr) const {
@@ -254,21 +312,15 @@ LogLevel DeviceInfoLedger::stringToLogLevel(const char *levelStr) const {
     else {
         level = LOG_LEVEL_NONE;
     }
+    
 
     return level;
 }
 
-void DeviceInfoLedger::configureLogHandler() {
-    if (logHandler) {
-        LogManager::instance()->removeHandler(logHandler);
-        delete logHandler;
-        logHandler = nullptr;
-    }
-
-    LogLevel level = stringToLogLevel(getConfigString("logLevel").c_str());
+void DeviceInfoLedger::getLogLevelFilters(LogLevel &level, LogCategoryFilters &filters) const {
+    level = stringToLogLevel(getConfigString("logLevel").c_str());
     // _deviceInfoLog.info("level %d", level);
 
-    LogCategoryFilters filters;
     forEachConfigArray("logFilters", [&filters,this](const Variant &el) {
         String category = el.get("category").toString();
         LogLevel level = stringToLogLevel(el.get("level").toString().c_str());
@@ -276,10 +328,25 @@ void DeviceInfoLedger::configureLogHandler() {
         filters.append(LogCategoryFilter(category, level)); 
     });
 
+}
+
+void DeviceInfoLedger::configureLogHandler() {
+#ifndef UNITTEST
+    if (logHandler) {
+        LogManager::instance()->removeHandler(logHandler);
+        delete logHandler;
+        logHandler = nullptr;
+    }
+
+    LogLevel level;
+    LogCategoryFilters filters;
+    getLogLevelFilters(level, filters);
+
     logHandler = new DeviceInfoLedgerLogHandler(level, filters);
 
 	// Add this handler into the system log manager
 	LogManager::instance()->addHandler(logHandler);
+#endif
 
 }
 
@@ -310,6 +377,7 @@ void DeviceInfoLedger::onFirstCloudConnection() {
 
 
 void DeviceInfoLedger::onCloudConnection() {
+#ifndef UNITTEST
     Variant data;
 
     // Save connection log
@@ -401,8 +469,11 @@ void DeviceInfoLedger::onCloudConnection() {
     infoLedger.set(data, Ledger::REPLACE); // Ledger::REPLACE Ledger::MERGE
 
     _deviceInfoLog.trace("infoLedger updated");
+#endif // UNITTEST
+
 }
 
+#ifndef UNITTEST
 DeviceInfoLedgerLogHandler::DeviceInfoLedgerLogHandler(LogLevel level, LogCategoryFilters filters) : StreamLogHandler(*this, level, filters) {
 
 }
@@ -415,6 +486,7 @@ size_t DeviceInfoLedgerLogHandler::write(uint8_t c) {
     DeviceInfoLedger::instance().write(c);
     return 1;
 }
+#endif // UNITTEST
 
 
 

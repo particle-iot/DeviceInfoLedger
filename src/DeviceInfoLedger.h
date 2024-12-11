@@ -10,6 +10,10 @@
 
 class DeviceInfoLedgerLogHandler; // Forward declaration
 
+#ifdef UNITTEST
+using namespace particle;
+#endif
+
 /**
  * This class is a singleton; you do not create one as a global, on the stack, or with new.
  * 
@@ -159,7 +163,6 @@ public:
      * This must only be called once at boot and not again. You cannot use this to reconfigure settings!
      */
     void setup();
-
     /**
      * @brief Perform application loop operations; call this from global application loop()
      * 
@@ -176,6 +179,14 @@ public:
      */
     bool getConfigBool(const char *key, bool defaultValue = false) const { return getConfigVariant(key, Variant(defaultValue)).toBool(); };
 
+    /**
+     * @brief Set a local config setting using a bool
+     * 
+     * @param key Key to set
+     * @param value Value to set to
+     * @return true if successfully set, false if not
+     */
+    bool setLocalConfigBool(const char *key, bool value) { return setLocalConfigVariant(key, Variant(value)); };
 
     /**
      * @brief Get an int (32-bit signed integer) configuration setting from local settings or cloud configuration (default or device override)
@@ -185,6 +196,15 @@ public:
      * @return true or false depending on the configuration setting or defaultValue.
      */
     int getConfigInt(const char *key, int defaultValue = 0) const { return getConfigVariant(key, Variant(defaultValue)).toInt(); };
+
+    /**
+     * @brief Set a local config setting using an int (signed 32-bit integer)
+     * 
+     * @param key Key to set
+     * @param value Value to set to
+     * @return true if successfully set, false if not
+     */
+    bool setLocalConfigInt(const char *key, int value) { return setLocalConfigVariant(key, Variant(value)); };
 
 
     /**
@@ -197,6 +217,15 @@ public:
     double getConfigDouble(const char *key, double defaultValue = 0.0) const { return getConfigVariant(key, Variant(defaultValue)).toDouble(); };
 
     /**
+     * @brief Set a local config setting using a double (64-bit floating point)
+     * 
+     * @param key Key to set
+     * @param value Value to set to
+     * @return true if successfully set, false if not
+     */
+    bool setLocalConfigBool(const char *key, double value) { return setLocalConfigVariant(key, Variant(value)); };
+
+    /**
      * @brief Get a String configuration setting from local settings or cloud configuration (default or device override)
      * 
      * @param key Key to read in the top level of the configuration object
@@ -206,6 +235,15 @@ public:
     String getConfigString(const char *key, const char *defaultValue = "") const { return getConfigVariant(key, Variant(defaultValue)).toString(); };
 
     /**
+     * @brief Set a local config setting using a c-string (null-terminated UTF-8, const char *)
+     * 
+     * @param key Key to set
+     * @param value Value to set to
+     * @return true if successfully set, false if not
+     */
+    bool setLocalConfigString(const char *key, const char *value) { return setLocalConfigVariant(key, Variant(value)); };
+
+    /**
      * @brief Get a configuration setting from local settings or cloud configuration (default or device override)
      *  
      * @param key Top level key in the ledger
@@ -213,6 +251,28 @@ public:
      * @return Variant Return Variant, see also getConfigBool, getConfigInt, ... that wrap this method
      */
     Variant getConfigVariant(const char *key, Variant defaultValue = {}) const;
+
+    /**
+     * @brief Set a local config setting using a Variant
+     * 
+     * @param key Key to set
+     * @param value Value to set to
+     * @return true if successfully set, false if not
+     * 
+     * See also overloads for specific types such as setLocalConfigBool, setLocalConfigInt, etc.
+     */
+    bool setLocalConfigVariant(const char *key, Variant value) {
+        return localConfig.set(key, value);
+    }
+
+    /**
+     * @brief Set the local config log filters from a static array of LogCategoryFilter
+     * 
+     * @param filterArray 
+     * @return true 
+     * @return false 
+     */
+    bool setLocalConfigLogLevel(LogLevel level = LOG_LEVEL_INFO, LogCategoryFilters filters = {});
 
     /**
      * @brief Iterate a configuration setting from local settings or cloud configuration (default or device override)
@@ -233,6 +293,14 @@ public:
     int getConfigConnectionLog() const { return getConfigInt("connectionLog", 0); };
 
     /**
+     * @brief Set a local configuration setting for connectionLog (log size). Default is 0 (disabled).
+     * 
+     * @param value to set
+     * @return bool true if successfully set
+     */
+    bool setLocalConfigConnectionLog(int value) { return setLocalConfigInt("connectionLog", value); };
+
+    /**
      * @brief Get the lastRunLog (int) configuration setting from local settings or cloud configuration (default or device override)
      * 
      * @return int The size of the last run log in bytes to be included in the ledger.
@@ -245,11 +313,28 @@ public:
     int getConfigLastRunLog() const { return getConfigInt("lastRunLog", 0); };
 
     /**
+     * @brief Set a local configuration setting for lastRunLog (log size). Default is 0 (disabled).
+     * 
+     * @param value to set
+     * @return bool true if successfully set
+     */
+    bool setLocalConfigLastRunLog(int value) { return setLocalConfigInt("lastRunLog", value); };
+
+    /**
+     * 
      * @brief Get the includeGeneral (bool) configuration setting from local settings or cloud configuration (default or device override)
      * 
      * @return bool 
      */
     bool getConfigIncludeGeneral() const { return getConfigBool("includeGeneral", false); };
+
+    /**
+     * @brief Set a local configuration setting for includeGeneral. Default is false.
+     * 
+     * @param value to set
+     * @return bool true if successfully set
+     */
+    bool setLocalConfigIncludeGeneral(bool value) { return setLocalConfigBool("includeGeneral", value); };
 
     /**
      * @brief Get the includeDiag (bool) configuration setting from local settings or cloud configuration (default or device override)
@@ -259,12 +344,27 @@ public:
     bool getConfigIncludeDiag() const { return getConfigBool("includeDiag", false); };
 
     /**
+     * @brief Set a local configuration setting for includeDiag. Default is false.
+     * 
+     * @param value to set
+     * @return bool true if successfully set
+     */
+    bool setLocalConfigIncludeDialg(bool value) { return setLocalConfigBool("includeDiag", value); };
+
+    /**
      * @brief Get the includeTower (bool) configuration setting from local settings or cloud configuration (default or device override)
      * 
      * @return bool 
      */
     bool getConfigIncludeTower() const { return getConfigBool("includeTower", false); };
 
+    /**
+     * @brief Set a local configuration setting for includeTower. Default is false.
+     * 
+     * @param value to set
+     * @return bool true if successfully set
+     */
+    bool setLocalConfigIncludeTower(bool value) { return setLocalConfigBool("includeTower", value); };
 
     /**
      * @brief Called by DeviceInfoLedgerLogHandler to handle log messages
@@ -280,7 +380,10 @@ public:
      */
     static const uint32_t retainedMagicBytes = 0xde8e46cc;
 
+#ifndef UNITTEST
 protected:
+#endif 
+
     /**
      * @brief The constructor is protected because the class is a singleton
      * 
@@ -312,6 +415,23 @@ protected:
      * Note that it really only searches for case-sensitive "INFO", "TRACE", etc. 
      */
     LogLevel stringToLogLevel(const char *levelStr) const;
+
+
+    /**
+     * @brief Convert a log level value (like LOG_LEVEL_INFO) to a string
+     * 
+     * @param level 
+     * @return const char* string string such as "INFO". 
+     */
+    const char *logLevelToString(LogLevel level) const;
+
+    /**
+     * @brief Get the log level settings
+     * 
+     * @param level 
+     * @param filters 
+     */
+    void getLogLevelFilters(LogLevel &level, LogCategoryFilters &filters) const;
 
     /**
      * @brief Configure the log handler with the current settings in logLevel and logFilter
@@ -466,6 +586,7 @@ protected:
      */
     size_t retainedDataSize = 0;
 
+#ifndef UNITTEST
     /**
      * @brief Reset reason, saved at the beginning of setup
      */
@@ -490,7 +611,8 @@ protected:
      * @brief Ledger device-specific override configuration, initialized during setup if enabled
      */
     Ledger configDeviceLedger;
-    
+#endif // UNITTEST
+
     /**
      * @brief The StreamLogHandler object
      * 
@@ -507,6 +629,7 @@ protected:
 
 };
 
+#ifndef UNITTEST
 /**
  * @brief Log handler class, used internally
  */
@@ -532,5 +655,7 @@ public:
      */
     virtual size_t write(uint8_t);
 };
+#endif // UNITTEST
+
 
 #endif  /* __DEVICEINFOLEDGER_H */
