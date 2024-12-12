@@ -200,11 +200,11 @@ Variant DeviceInfoLedger::getConfigLogFilters() const {
     if (deviceConfig.has(key)) {
         sources.append(deviceConfig.get(key));
     }
-    else
+
     if (defaultConfig.has(key)) {
         sources.append(defaultConfig.get(key));
     }
-    else
+
     if (localConfig.has(key)) {
         sources.append(localConfig.get(key));
     }
@@ -368,14 +368,15 @@ void DeviceInfoLedger::getLogLevelFilters(LogLevel &level, LogCategoryFilters &f
     level = stringToLogLevel(getConfigString("logLevel").c_str());
     // _deviceInfoLog.info("level %d", level);
 
+    filters.clear();
     Variant logFilters = getConfigLogFilters();
 
-    // _deviceInfoLog.info("logFilters JSON %s", logFilters.toJSON().c_str());
+    // _deviceInfoLog.trace("logFilters JSON %s", logFilters.toJSON().c_str());
 
     for(int ii = 0; ii < logFilters.size(); ii++) {
         String category = logFilters.at(ii).get("category").toString();
         LogLevel level = stringToLogLevel(logFilters.at(ii).get("level").toString().c_str());
-        // _deviceInfoLog.info("filter %d %s", level, category.c_str());       
+        // _deviceInfoLog.trace("filter %d %s", level, category.c_str());       
         filters.append(LogCategoryFilter(category, level));         
     }
 

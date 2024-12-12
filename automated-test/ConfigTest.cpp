@@ -25,7 +25,7 @@ const char jsonConfig1[] =
     "\"includeGeneral\": true,"
     "\"includeDiag\": false,"
     "\"includeTower\": false,"
-    "\"logLevel\": \"LOG_LEVEL_INFO\","
+    "\"logLevel\": \"INFO\","
     "\"logFilters\": []"
 "}";
 
@@ -33,7 +33,7 @@ const char jsonConfig2[] =
 "{"
     "\"lastRunLog\": 4096,"
     "\"connectionLog\": 2048,"
-    "\"logLevel\": \"LOG_LEVEL_TRACE\""
+    "\"logLevel\": \"TRACE\""
 "}";
 
 const char jsonConfig3[] = 
@@ -43,7 +43,7 @@ const char jsonConfig3[] =
     "\"includeGeneral\": true,"
     "\"includeDiag\": false,"
     "\"includeTower\": false,"
-    "\"logLevel\": \"LOG_LEVEL_ERROR\","
+    "\"logLevel\": \"ERROR\","
     "\"logFilters\": []"
 "}";
 
@@ -52,38 +52,38 @@ const char jsonConfig4[] =
     "\"lastRunLog\": 1024,"
     "\"connectionLog\": 4096,"
     "\"includeTower\": true,"
-    "\"logLevel\": \"LOG_LEVEL_INFO\","
+    "\"logLevel\": \"INFO\","
 "}";
 
 /*
 {
-    "logLevel": "LOG_LEVEL_INFO",
+    "logLevel": "INFO",
     "logFilters": [
         {
             "category": "app.devinfo",
-            "level": "LOG_LEVEL_TRACE"
+            "level": "TRACE"
         }
     ]
 }
 */
 const char jsonConfig5[] = 
 "{"
-    "\"logLevel\": \"LOG_LEVEL_INFO\","
+    "\"logLevel\": \"INFO\","
     "\"logFilters\": ["
         "{"
             "\"category\": \"app.devinfo\","
-            "\"level\": \"LOG_LEVEL_TRACE\""
+            "\"level\": \"TRACE\""
         "}"
     "]"
 "}";
 
 const char jsonConfig6[] = 
 "{"
-    "\"logLevel\": \"LOG_LEVEL_INFO\","
+    "\"logLevel\": \"INFO\","
     "\"logFilters\": ["
         "{"
             "\"category\": \"app.devinfo\","
-            "\"level\": \"LOG_LEVEL_INFO\""
+            "\"level\": \"INFO\""
         "}"
     "]"
 "}";
@@ -93,7 +93,7 @@ const char jsonConfig7[] =
     "\"logFilters\": ["
         "{"
             "\"category\": \"app.test\","
-            "\"level\": \"LOG_LEVEL_TRACE\""
+            "\"level\": \"TRACE\""
         "}"
     "]"
 "}";
@@ -347,7 +347,7 @@ void runUnitTests() {
         assertInt(LOG_LEVEL_TRACE, filters.at(0).level());
     }
 
-    // Log filter merging - single entry
+    // Log filter merging - local config (JSON) + device config (no overlap)
     {
         DeviceInfoLedger t1;
         LogLevel level;
@@ -374,9 +374,33 @@ void runUnitTests() {
         assertString("app.test", filters.at(1).category());
         assertInt(LOG_LEVEL_TRACE, filters.at(1).level());
 
-// jsonConfig5
     }
 
+    // Log filter merging - local config (JSON) + device config override category
+    {
+        DeviceInfoLedger t1;
+        LogLevel level;
+        LogCategoryFilters filters;
+
+        t1.withLocalConfig(jsonConfig6);
+
+        t1.getLogLevelFilters(level, filters);
+        assertInt(LOG_LEVEL_INFO, level);
+        assertInt(1, filters.size());
+
+        assertString("app.devinfo", filters.at(0).category());
+        assertInt(LOG_LEVEL_INFO, filters.at(0).level());
+
+        t1.deviceConfig = LedgerData::fromJSON(jsonConfig5);
+
+        t1.getLogLevelFilters(level, filters);
+        assertInt(LOG_LEVEL_INFO, level);
+        assertInt(1, filters.size());
+
+        assertString("app.devinfo", filters.at(0).category());
+        assertInt(LOG_LEVEL_TRACE, filters.at(0).level());
+
+    }
     // Filters array in device config overrides local
     /*
     {
