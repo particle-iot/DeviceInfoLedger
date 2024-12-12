@@ -349,7 +349,7 @@ public:
      * @param value to set
      * @return bool true if successfully set
      */
-    bool setLocalConfigIncludeDialg(bool value) { return setLocalConfigBool("includeDiag", value); };
+    bool setLocalConfigIncludeDiag(bool value) { return setLocalConfigBool("includeDiag", value); };
 
     /**
      * @brief Get the includeTower (bool) configuration setting from local settings or cloud configuration (default or device override)
@@ -365,6 +365,14 @@ public:
      * @return bool true if successfully set
      */
     bool setLocalConfigIncludeTower(bool value) { return setLocalConfigBool("includeTower", value); };
+
+
+    /**
+     * @brief Get the log filter configuration, merging local, cloud debug, and device configurations
+     * 
+     * @return Variant 
+     */
+    Variant getConfigLogFilters() const;
 
     /**
      * @brief Called by DeviceInfoLedgerLogHandler to handle log messages

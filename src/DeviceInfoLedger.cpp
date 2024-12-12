@@ -191,6 +191,53 @@ Variant DeviceInfoLedger::getConfigVariant(const char *key, Variant defaultValue
     return result;
 }
 
+Variant DeviceInfoLedger::getConfigLogFilters() const {
+    const char *key = "logFilters";
+    Variant array;
+    array.asArray();
+
+    Vector<Variant> sources;
+    if (deviceConfig.has(key)) {
+        sources.append(deviceConfig.get(key));
+    }
+    else
+    if (defaultConfig.has(key)) {
+        sources.append(defaultConfig.get(key));
+    }
+    else
+    if (localConfig.has(key)) {
+        sources.append(localConfig.get(key));
+    }
+
+    Map<String,String> map;
+    
+    for(Variant source : sources) {
+        if (source.isArray()) {
+            int size = sources.size();
+            if (size > 0) {
+                for(int ii = 0; ii < size; ii++) {
+                    String category = source.at(ii).get("category").asString();
+                    String level = source.at(ii).get("level").asString();
+
+                    if (category.length() != 0 && !map.has(category)) {
+                        map.set(category, level);
+                    }    
+                }
+            }
+        }        
+    }
+
+    for(Map<String,String>::Entry entry : map.entries()) {
+        Variant v;
+        v.set("category", entry.first);
+        v.set("level", entry.second);
+        array.append(v);
+    }
+
+    return array;
+}
+
+
 
 void DeviceInfoLedger::forEachConfigArray(const char *key, std::function<void(const Variant &el)> fn) const {
 
@@ -321,12 +368,16 @@ void DeviceInfoLedger::getLogLevelFilters(LogLevel &level, LogCategoryFilters &f
     level = stringToLogLevel(getConfigString("logLevel").c_str());
     // _deviceInfoLog.info("level %d", level);
 
-    forEachConfigArray("logFilters", [&filters,this](const Variant &el) {
-        String category = el.get("category").toString();
-        LogLevel level = stringToLogLevel(el.get("level").toString().c_str());
+    Variant logFilters = getConfigLogFilters();
+
+    // _deviceInfoLog.info("logFilters JSON %s", logFilters.toJSON().c_str());
+
+    for(int ii = 0; ii < logFilters.size(); ii++) {
+        String category = logFilters.at(ii).get("category").toString();
+        LogLevel level = stringToLogLevel(logFilters.at(ii).get("level").toString().c_str());
         // _deviceInfoLog.info("filter %d %s", level, category.c_str());       
-        filters.append(LogCategoryFilter(category, level)); 
-    });
+        filters.append(LogCategoryFilter(category, level));         
+    }
 
 }
 
