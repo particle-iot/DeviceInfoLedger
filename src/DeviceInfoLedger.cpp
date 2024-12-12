@@ -175,17 +175,17 @@ Variant DeviceInfoLedger::getConfigVariant(const char *key, Variant defaultValue
 
     if (deviceConfig.has(key)) {
         result  = deviceConfig.get(key);
-        _deviceInfoLog.trace("device override key %s", key);
+        // _deviceInfoLog.trace("device override key %s", key);
     }
     else
     if (defaultConfig.has(key)) {
         result  = defaultConfig.get(key);
-        _deviceInfoLog.trace("defaultConfig key %s", key);
+        // _deviceInfoLog.trace("defaultConfig key %s", key);
     }
     else
     if (localConfig.has(key)) {
         result  = localConfig.get(key);
-        _deviceInfoLog.trace("localConfig key %s", key);
+        // _deviceInfoLog.trace("localConfig key %s", key);
     }
 
     return result;
