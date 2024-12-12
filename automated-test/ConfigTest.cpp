@@ -401,8 +401,8 @@ void runUnitTests() {
         assertInt(LOG_LEVEL_TRACE, filters.at(0).level());
 
     }
-    // Filters array in device config overrides local
-    /*
+
+    // Filters array in device config overrides local    
     {
         DeviceInfoLedger t1;
         LogLevel level;
@@ -420,14 +420,14 @@ void runUnitTests() {
 
         t1.deviceConfig = LedgerData::fromJSON(jsonConfig5);
 
+        t1.getLogLevelFilters(level, filters);
         assertInt(LOG_LEVEL_INFO, level);
         assertInt(1, filters.size());
 
         assertString("app.devinfo", filters.at(0).category());
         assertInt(LOG_LEVEL_TRACE, filters.at(0).level());
-
     }
-    */
+    
 
 
 }
