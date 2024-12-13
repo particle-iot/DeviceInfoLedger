@@ -193,48 +193,31 @@ Variant DeviceInfoLedger::getConfigVariant(const char *key, Variant defaultValue
 
 Variant DeviceInfoLedger::getConfigLogFilters() const {
     const char *key = "logFilters";
-    Variant array;
-    array.asArray();
+    Variant map;
+    map.asMap();
 
+    // sources is lowest priority first; later ones overwrite earlier keys
     Vector<Variant> sources;
+    if (localConfig.has(key)) {
+        sources.append(localConfig.get(key));
+    }
+    if (defaultConfig.has(key)) {
+        sources.append(defaultConfig.get(key));
+    }
     if (deviceConfig.has(key)) {
         sources.append(deviceConfig.get(key));
     }
 
-    if (defaultConfig.has(key)) {
-        sources.append(defaultConfig.get(key));
-    }
 
-    if (localConfig.has(key)) {
-        sources.append(localConfig.get(key));
-    }
-
-    Map<String,String> map;
-    
     for(Variant source : sources) {
-        if (source.isArray()) {
-            int size = sources.size();
-            if (size > 0) {
-                for(int ii = 0; ii < size; ii++) {
-                    String category = source.at(ii).get("category").asString();
-                    String level = source.at(ii).get("level").asString();
-
-                    if (category.length() != 0 && !map.has(category)) {
-                        map.set(category, level);
-                    }    
-                }
+        if (source.isMap()) {
+            for(Map<String,Variant>::Entry entry : source.asMap().entries()) {
+                map.set(entry.first, entry.second);
             }
-        }        
+        }  
     }
 
-    for(Map<String,String>::Entry entry : map.entries()) {
-        Variant v;
-        v.set("category", entry.first);
-        v.set("level", entry.second);
-        array.append(v);
-    }
-
-    return array;
+    return map;
 }
 
 
@@ -256,15 +239,12 @@ bool DeviceInfoLedger::setLocalConfigLogLevel(LogLevel level, LogCategoryFilters
     
     result = setLocalConfigString("logLevel", logLevelToString(level));
 
-    Variant array;
+    Variant map;
     for(LogCategoryFilter &filter: filters) {
-        Variant entry;
-        entry.set("category", filter.category());
-        entry.set("level", logLevelToString(filter.level()));
-        array.append(entry);
+        map.set(filter.category(), Variant(logLevelToString(filter.level())));
     }
-    if (array.isArray()) {
-        result = setLocalConfigVariant("logFilters", array);
+    if (map.isMap()) {
+        result = setLocalConfigVariant("logFilters", map);
     }
 
     return result;
@@ -373,11 +353,13 @@ void DeviceInfoLedger::getLogLevelFilters(LogLevel &level, LogCategoryFilters &f
 
     // _deviceInfoLog.trace("logFilters JSON %s", logFilters.toJSON().c_str());
 
-    for(int ii = 0; ii < logFilters.size(); ii++) {
-        String category = logFilters.at(ii).get("category").toString();
-        LogLevel level = stringToLogLevel(logFilters.at(ii).get("level").toString().c_str());
-        // _deviceInfoLog.trace("filter %d %s", level, category.c_str());       
-        filters.append(LogCategoryFilter(category, level));         
+    if (logFilters.isMap()) {
+        for(Map<String,Variant>::Entry entry : logFilters.asMap().entries()) {
+            String category = entry.first;
+            LogLevel level = stringToLogLevel(entry.second.toString().c_str());    
+            // _deviceInfoLog.trace("filter %d %s", level, category.c_str());       
+            filters.append(LogCategoryFilter(category, level));         
+        }
     }
 
 }

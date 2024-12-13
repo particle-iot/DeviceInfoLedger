@@ -17,7 +17,7 @@ const char localConfig[] =
     "\"includeDiag\": false,"
     "\"includeTower\": false,"
     "\"logLevel\": \"INFO\","
-    "\"logFilters\": []"
+    "\"logFilters\": {}"
 "}";
 
 

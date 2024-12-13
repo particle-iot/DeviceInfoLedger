@@ -26,7 +26,7 @@ const char jsonConfig1[] =
     "\"includeDiag\": false,"
     "\"includeTower\": false,"
     "\"logLevel\": \"INFO\","
-    "\"logFilters\": []"
+    "\"logFilters\": {}"
 "}";
 
 const char jsonConfig2[] = 
@@ -44,7 +44,7 @@ const char jsonConfig3[] =
     "\"includeDiag\": false,"
     "\"includeTower\": false,"
     "\"logLevel\": \"ERROR\","
-    "\"logFilters\": []"
+    "\"logFilters\": {}"
 "}";
 
 const char jsonConfig4[] = 
@@ -58,44 +58,32 @@ const char jsonConfig4[] =
 /*
 {
     "logLevel": "INFO",
-    "logFilters": [
-        {
-            "category": "app.devinfo",
-            "level": "TRACE"
-        }
-    ]
+    "logFilters": {
+        "app.devinfo": "TRACE"
+    }
 }
 */
 const char jsonConfig5[] = 
 "{"
     "\"logLevel\": \"INFO\","
-    "\"logFilters\": ["
-        "{"
-            "\"category\": \"app.devinfo\","
-            "\"level\": \"TRACE\""
-        "}"
-    "]"
+    "\"logFilters\": {"
+        "\"app.devinfo\": \"TRACE\""
+    "}"
 "}";
 
 const char jsonConfig6[] = 
 "{"
     "\"logLevel\": \"INFO\","
-    "\"logFilters\": ["
-        "{"
-            "\"category\": \"app.devinfo\","
-            "\"level\": \"INFO\""
-        "}"
-    "]"
+    "\"logFilters\": {"
+        "\"app.devinfo\": \"INFO\""
+    "}"
 "}";
 
 const char jsonConfig7[] = 
 "{"
-    "\"logFilters\": ["
-        "{"
-            "\"category\": \"app.test\","
-            "\"level\": \"TRACE\""
-        "}"
-    "]"
+    "\"logFilters\": {"
+        "\"app.test\": \"TRACE\""
+    "}"
 "}";
 
 
@@ -428,7 +416,11 @@ void runUnitTests() {
         assertInt(LOG_LEVEL_TRACE, filters.at(0).level());
     }
     
+    // Arbitrary configuration
+    {
+        DeviceInfoLedger t1;
 
+    }
 
 }
 
