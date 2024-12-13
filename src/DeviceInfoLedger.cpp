@@ -171,30 +171,7 @@ void DeviceInfoLedger::loop() {
 
 
 Variant DeviceInfoLedger::getConfigVariant(const char *key, Variant defaultValue) const {
-    Variant result = defaultValue;
-
-    if (deviceConfig.has(key)) {
-        result  = deviceConfig.get(key);
-        // _deviceInfoLog.trace("device override key %s", key);
-    }
-    else
-    if (defaultConfig.has(key)) {
-        result  = defaultConfig.get(key);
-        // _deviceInfoLog.trace("defaultConfig key %s", key);
-    }
-    else
-    if (localConfig.has(key)) {
-        result  = localConfig.get(key);
-        // _deviceInfoLog.trace("localConfig key %s", key);
-    }
-
-    return result;
-}
-
-Variant DeviceInfoLedger::getConfigLogFilters() const {
-    const char *key = "logFilters";
-    Variant map;
-    map.asMap();
+    Variant result;
 
     // sources is lowest priority first; later ones overwrite earlier keys
     Vector<Variant> sources;
@@ -208,32 +185,27 @@ Variant DeviceInfoLedger::getConfigLogFilters() const {
         sources.append(deviceConfig.get(key));
     }
 
-
     for(Variant source : sources) {
         if (source.isMap()) {
             for(Map<String,Variant>::Entry entry : source.asMap().entries()) {
-                map.set(entry.first, entry.second);
+                result.set(entry.first, entry.second);
             }
         }  
-    }
-
-    return map;
-}
-
-
-
-void DeviceInfoLedger::forEachConfigArray(const char *key, std::function<void(const Variant &el)> fn) const {
-
-    Variant array = getConfigVariant(key);
-    if (array.isArray()) {
-        int size = array.size();
-        if (size > 0) {
-            for(int ii = 0; ii < size; ii++) {
-                fn(array[ii]);
+        else
+        if (source.isArray()) {
+            for(int ii = 0; ii < source.size(); ii++) {
+                result.append(source.at(ii));
             }
         }
+        else {
+            result = source;
+        }
     }
+
+    return result;
 }
+
+
 bool DeviceInfoLedger::setLocalConfigLogLevel(LogLevel level, LogCategoryFilters filters) {
     bool result;
     
@@ -349,7 +321,7 @@ void DeviceInfoLedger::getLogLevelFilters(LogLevel &level, LogCategoryFilters &f
     // _deviceInfoLog.info("level %d", level);
 
     filters.clear();
-    Variant logFilters = getConfigLogFilters();
+    Variant logFilters = getConfigVariant("logFilters");
 
     // _deviceInfoLog.trace("logFilters JSON %s", logFilters.toJSON().c_str());
 

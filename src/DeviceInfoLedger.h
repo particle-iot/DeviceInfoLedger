@@ -275,14 +275,6 @@ public:
     bool setLocalConfigLogLevel(LogLevel level = LOG_LEVEL_INFO, LogCategoryFilters filters = {});
 
     /**
-     * @brief Iterate a configuration setting from local settings or cloud configuration (default or device override)
-     * 
-     * @param key A top-level key in the ledger that specifies an array
-     * @param fn A function to call for each element in the array
-     */
-    void forEachConfigArray(const char *key, std::function<void(const Variant &el)> fn) const;
-
-    /**
      * @brief Get the connectionLog (int) configuration setting from local settings or cloud configuration (default or device override)
      * 
      * @return int The size of the connection log in bytes to be included in the ledger. 
@@ -365,15 +357,7 @@ public:
      * @return bool true if successfully set
      */
     bool setLocalConfigIncludeTower(bool value) { return setLocalConfigBool("includeTower", value); };
-
-
-    /**
-     * @brief Get the log filter configuration, merging local, cloud debug, and device configurations
-     * 
-     * @return Variant 
-     */
-    Variant getConfigLogFilters() const;
-
+    
     /**
      * @brief Called by DeviceInfoLedgerLogHandler to handle log messages
      * 

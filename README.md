@@ -1,6 +1,9 @@
 # DeviceInfoLedger
 
-Store Particle device log data and device information in Ledger
+This library perform two separate but related things:
+
+- Store cloud-based configuration for devices
+- Store Particle device log data and device information in Ledger
 
 
 ## Configuration
