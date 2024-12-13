@@ -87,6 +87,7 @@ const char jsonConfig7[] =
 "}";
 
 
+
 void runUnitTests() {
     // Local unit tests only used off-device 
 
@@ -415,12 +416,36 @@ void runUnitTests() {
         assertString("app.devinfo", filters.at(0).category());
         assertInt(LOG_LEVEL_TRACE, filters.at(0).level());
     }
-    
+
     // Arbitrary configuration
+
+    const char jsonConfig100[] = 
+    "{"
+        "\"a\": 123,"
+        "\"b\": true,"
+        "\"c\": \"test\""
+    "}";
+    const char jsonConfig101[] = 
+    "{"
+        "\"a\": 456"
+    "}";
+
     {
         DeviceInfoLedger t1;
 
+        t1.defaultConfig = LedgerData::fromJSON(jsonConfig100);
+
+        assertInt(123, t1.getConfigInt("a"));
+        assertInt(true, t1.getConfigBool("b"));
+        assertString("test", t1.getConfigString("c").c_str());
+
+
+        t1.deviceConfig = LedgerData::fromJSON(jsonConfig101);
+
+        assertInt(456, t1.getConfigInt("a"));
     }
+
+    
 
 }
 
