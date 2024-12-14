@@ -9,24 +9,17 @@ SerialLogHandler logHandler(LOG_LEVEL_INFO);
 
 retained uint8_t retainedLogs[2048];
 
-const char localConfig[] = 
-"{"
-    "\"lastRunLog\": 1024,"
-    "\"connectionLog\": 2048,"
-    "\"includeGeneral\": true,"
-    "\"includeDiag\": false,"
-    "\"includeTower\": false,"
-    "\"logLevel\": \"INFO\","
-    "\"logFilters\": {}"
-"}";
-
-
 void setup() {
     // The next line is for debugging and waits for USB serial debug to connect for 10 seconds so you can see more early log messages
     waitFor(Serial.isConnected, 10000);
 
     DeviceInfoLedger::instance()
-        .withLocalConfig(localConfig)
+        .withLocalConfigLastRunLog(1024)
+        .withLocalConfigConnectionLog(2048)
+        .withLocalConfigIncludeGeneral(true)
+        .withLocalConfigIncludeDiag(false)
+        .withLocalConfigIncludeTower(false)
+        .withLocalConfigLogLevel(LOG_LEVEL_INFO, {})
         .withRetainedBuffer(retainedLogs, sizeof(retainedLogs))
         .setup(); 
 

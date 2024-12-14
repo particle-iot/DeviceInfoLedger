@@ -123,6 +123,8 @@ void DeviceInfoLedger::setup() {
         return;
     }
 
+    DeviceConfigLedger::instance().withUpdateCallback([this]() { updateConfig(); });
+
     resetReason = System.resetReason();
     if (resetReason ==  RESET_REASON_USER) {
         resetReasonData = System.resetReasonData();
@@ -250,7 +252,7 @@ void DeviceInfoLedger::loop() {
 
 
 
-bool DeviceInfoLedger::setLocalConfigLogLevel(LogLevel level, LogCategoryFilters filters) {
+DeviceInfoLedger &DeviceInfoLedger::withLocalConfigLogLevel(LogLevel level, LogCategoryFilters filters) {
     bool result;
     
     result = setLocalConfigString("logLevel", logLevelToString(level));
@@ -263,7 +265,7 @@ bool DeviceInfoLedger::setLocalConfigLogLevel(LogLevel level, LogCategoryFilters
         result = setLocalConfigVariant("logFilters", map);
     }
 
-    return result;
+    return *this;
 }
 
 

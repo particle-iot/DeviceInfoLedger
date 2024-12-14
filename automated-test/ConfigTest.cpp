@@ -125,7 +125,7 @@ void runUnitTests() {
         assertInt(0, filters.size());
 
         // Test resetting value
-        DeviceInfoLedger::instance().setLocalConfigConnectionLog(4096);
+        DeviceInfoLedger::instance().withLocalConfigConnectionLog(4096);
         assertInt(4096, DeviceInfoLedger::instance().getConfigConnectionLog());
     }
 
@@ -133,10 +133,10 @@ void runUnitTests() {
     {
         DeviceConfigLedger::instance().clear();
 
-        DeviceInfoLedger::instance().setLocalConfigLastRunLog(1024);
-        DeviceInfoLedger::instance().setLocalConfigConnectionLog(2048);
-        DeviceInfoLedger::instance().setLocalConfigIncludeGeneral(true);
-        DeviceInfoLedger::instance().setLocalConfigLogLevel(LOG_LEVEL_INFO);
+        DeviceInfoLedger::instance().withLocalConfigLastRunLog(1024);
+        DeviceInfoLedger::instance().withLocalConfigConnectionLog(2048);
+        DeviceInfoLedger::instance().withLocalConfigIncludeGeneral(true);
+        DeviceInfoLedger::instance().withLocalConfigLogLevel(LOG_LEVEL_INFO);
 
 
         assertInt(1024, DeviceInfoLedger::instance().getConfigLastRunLog());
@@ -323,7 +323,7 @@ void runUnitTests() {
         LogLevel level;
         LogCategoryFilters filters;
 
-        DeviceInfoLedger::instance().setLocalConfigLogLevel(LOG_LEVEL_INFO, {
+        DeviceInfoLedger::instance().withLocalConfigLogLevel(LOG_LEVEL_INFO, {
             { "app.devinfo", LOG_LEVEL_TRACE }
         });
 

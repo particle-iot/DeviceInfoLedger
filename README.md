@@ -1,9 +1,12 @@
 # DeviceInfoLedger
 
-This library perform two separate but related things:
+This library perform two separate but related things using two separate classes:
 
-- Store cloud-based configuration for devices
-- Store Particle device log data and device information in Ledger
+- Store cloud-based configuration for devices (DeviceConfigLedger)
+- Store Particle device log data and device information in Ledger (DeviceInfoLedger)
+
+You can use the cloud-based configuration without using the DeviceInfoLedger, if desired. 
+You can also use the DeviceInfoLedger with a local configuration, not using the remote configuration option.
 
 ## Cloud-based configuration
 
@@ -11,7 +14,22 @@ Using Ledger, this library supports a default configuration using a cloud-to-dev
 
 It also supports an optional per-device configuration using a cloud-to-device device ledger (scoped to a device). The per-device configuration overrides specific values in the product default, making it easy to just change one setting and leave the others as the default value.
 
-The configuration, like Ledger, it JSON-based. 
+Configuration support key (string) and value pairs, using types that can be represented in JSON and `Variant` including:
+
+- boolean values (`bool` in C++)
+- integer number values (`int`, `unsigned`, `int64_t`, `uint64_t`)
+- floating point number values (`double`)
+- string values (`String`)
+
+Additionally, the top level can also include one-level deep of object and array types.
+
+For a top-level object, keys are merged within the same key name. 
+
+For a top-level array, 
+
+Using cloud-based configuration is optional if you only want to use device log data and device information. These settings can be 
+configured locally on device, if desire. However, you may want to use both so you can control the log settings remotely from
+the cloud-side.
 
 
 ## Configuration
@@ -25,7 +43,7 @@ The following JSON structure is used for local configuration, default cloud conf
     "includeGeneral": true,
     "includeDiag": true,
     "includeTower": true,
-    "logLevel": "LOG_LEVEL_INFO",
+    "logLevel": "INFO",
     "logFilters": [],
 }
 ```

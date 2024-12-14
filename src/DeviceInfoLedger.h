@@ -559,7 +559,7 @@ public:
      * @return true 
      * @return false 
      */
-    bool setLocalConfigLogLevel(LogLevel level = LOG_LEVEL_INFO, LogCategoryFilters filters = {});
+    DeviceInfoLedger &withLocalConfigLogLevel(LogLevel level = LOG_LEVEL_INFO, LogCategoryFilters filters = {});
 
     /**
      * @brief Get the connectionLog (int) configuration setting from local settings or cloud configuration (default or device override)
@@ -577,7 +577,7 @@ public:
      * @param value to set
      * @return bool true if successfully set
      */
-    bool setLocalConfigConnectionLog(int value) { return setLocalConfigInt("connectionLog", value); };
+    DeviceInfoLedger &withLocalConfigConnectionLog(int value) { setLocalConfigInt("connectionLog", value); return *this; };
 
     /**
      * @brief Get the lastRunLog (int) configuration setting from local settings or cloud configuration (default or device override)
@@ -597,7 +597,7 @@ public:
      * @param value to set
      * @return bool true if successfully set
      */
-    bool setLocalConfigLastRunLog(int value) { return setLocalConfigInt("lastRunLog", value); };
+    DeviceInfoLedger &withLocalConfigLastRunLog(int value) { setLocalConfigInt("lastRunLog", value); return *this; };
 
     /**
      * 
@@ -613,7 +613,7 @@ public:
      * @param value to set
      * @return bool true if successfully set
      */
-    bool setLocalConfigIncludeGeneral(bool value) { return setLocalConfigBool("includeGeneral", value); };
+    DeviceInfoLedger &withLocalConfigIncludeGeneral(bool value) { setLocalConfigBool("includeGeneral", value); return *this; };
 
     /**
      * @brief Get the includeDiag (bool) configuration setting from local settings or cloud configuration (default or device override)
@@ -628,7 +628,7 @@ public:
      * @param value to set
      * @return bool true if successfully set
      */
-    bool setLocalConfigIncludeDiag(bool value) { return setLocalConfigBool("includeDiag", value); };
+    DeviceInfoLedger &withLocalConfigIncludeDiag(bool value) { setLocalConfigBool("includeDiag", value); return *this; };
 
     /**
      * @brief Get the includeTower (bool) configuration setting from local settings or cloud configuration (default or device override)
@@ -643,7 +643,7 @@ public:
      * @param value to set
      * @return bool true if successfully set
      */
-    bool setLocalConfigIncludeTower(bool value) { return setLocalConfigBool("includeTower", value); };
+    DeviceInfoLedger &withLocalConfigIncludeTower(bool value) { setLocalConfigBool("includeTower", value); return *this; };
 
     /**
      * @brief Convert a string like LOG_LEVEL_INFO into its numeric equivalent 
@@ -686,9 +686,7 @@ public:
      */
     static const uint32_t retainedMagicBytes = 0xde8e46cc;
 
-#ifndef UNITTEST
 protected:
-#endif 
 
     /**
      * @brief The constructor is protected because the class is a singleton
@@ -840,9 +838,7 @@ protected:
     /**
      * @brief Ledger object for device information, initialized during setup
      */
-    Ledger infoLedger;
-
-    
+    Ledger infoLedger;    
 #endif // UNITTEST
 
     /**
