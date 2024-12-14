@@ -93,210 +93,209 @@ void runUnitTests() {
 
     // Default values
     {
-        // On-device, this constructor is protected and can't be called, but it's public in the unit tests
-        DeviceInfoLedger t1;
+        DeviceConfigLedger::instance().clear();
 
-        assertInt(0, t1.getConfigLastRunLog());
-        assertInt(0, t1.getConfigConnectionLog());
-        assertInt(false, t1.getConfigIncludeGeneral());
-        assertInt(false, t1.getConfigIncludeDiag());
+        assertInt(0, DeviceInfoLedger::instance().getConfigLastRunLog());
+        assertInt(0, DeviceInfoLedger::instance().getConfigConnectionLog());
+        assertInt(false, DeviceInfoLedger::instance().getConfigIncludeGeneral());
+        assertInt(false, DeviceInfoLedger::instance().getConfigIncludeDiag());
 
         LogLevel level;
         LogCategoryFilters filters;
-        t1.getLogLevelFilters(level, filters);
+        DeviceInfoLedger::instance().getLogLevelFilters(level, filters);
         assertInt(LOG_LEVEL_NONE, level);
         assertInt(0, filters.size());
     }
     
     // Set from JSON
     {
-        // On-device, this constructor is protected and can't be called, but it's public in the unit tests
-        DeviceInfoLedger t1;
+        DeviceConfigLedger::instance().clear();
 
-        t1.withLocalConfig(jsonConfig1);
+        DeviceConfigLedger::instance().withLocalConfig(jsonConfig1);
 
-        assertInt(1024, t1.getConfigLastRunLog());
-        assertInt(2048, t1.getConfigConnectionLog());
-        assertInt(true, t1.getConfigIncludeGeneral());
-        assertInt(false, t1.getConfigIncludeDiag());
+        assertInt(1024, DeviceInfoLedger::instance().getConfigLastRunLog());
+        assertInt(2048, DeviceInfoLedger::instance().getConfigConnectionLog());
+        assertInt(true, DeviceInfoLedger::instance().getConfigIncludeGeneral());
+        assertInt(false, DeviceInfoLedger::instance().getConfigIncludeDiag());
 
         LogLevel level;
         LogCategoryFilters filters;
-        t1.getLogLevelFilters(level, filters);
+        DeviceInfoLedger::instance().getLogLevelFilters(level, filters);
         assertInt(LOG_LEVEL_INFO, level);
         assertInt(0, filters.size());
 
         // Test resetting value
-        t1.setLocalConfigConnectionLog(4096);
-        assertInt(4096, t1.getConfigConnectionLog());
+        DeviceInfoLedger::instance().setLocalConfigConnectionLog(4096);
+        assertInt(4096, DeviceInfoLedger::instance().getConfigConnectionLog());
     }
 
     // Set from code
     {
-        // On-device, this constructor is protected and can't be called, but it's public in the unit tests
-        DeviceInfoLedger t1;
-        t1.setLocalConfigLastRunLog(1024);
-        t1.setLocalConfigConnectionLog(2048);
-        t1.setLocalConfigIncludeGeneral(true);
-        t1.setLocalConfigLogLevel(LOG_LEVEL_INFO);
+        DeviceConfigLedger::instance().clear();
+
+        DeviceInfoLedger::instance().setLocalConfigLastRunLog(1024);
+        DeviceInfoLedger::instance().setLocalConfigConnectionLog(2048);
+        DeviceInfoLedger::instance().setLocalConfigIncludeGeneral(true);
+        DeviceInfoLedger::instance().setLocalConfigLogLevel(LOG_LEVEL_INFO);
 
 
-        assertInt(1024, t1.getConfigLastRunLog());
-        assertInt(2048, t1.getConfigConnectionLog());
-        assertInt(true, t1.getConfigIncludeGeneral());
-        assertInt(false, t1.getConfigIncludeDiag());
+        assertInt(1024, DeviceInfoLedger::instance().getConfigLastRunLog());
+        assertInt(2048, DeviceInfoLedger::instance().getConfigConnectionLog());
+        assertInt(true, DeviceInfoLedger::instance().getConfigIncludeGeneral());
+        assertInt(false, DeviceInfoLedger::instance().getConfigIncludeDiag());
 
         LogLevel level;
         LogCategoryFilters filters;
-        t1.getLogLevelFilters(level, filters);
+        DeviceInfoLedger::instance().getLogLevelFilters(level, filters);
         assertInt(LOG_LEVEL_INFO, level);
         assertInt(0, filters.size());
     }
 
     // Cloud defaults, no local config
     {
-        // On-device, this constructor is protected and can't be called, but it's public in the unit tests
-        // Same for defaultConfig and deviceConfig
-        DeviceInfoLedger t1;
-        t1.defaultConfig = LedgerData::fromJSON(jsonConfig1);
+        DeviceConfigLedger::instance().clear();
 
-        assertInt(1024, t1.getConfigLastRunLog());
-        assertInt(2048, t1.getConfigConnectionLog());
-        assertInt(true, t1.getConfigIncludeGeneral());
-        assertInt(false, t1.getConfigIncludeDiag());
+        DeviceConfigLedger::instance().setDefaultConfig(LedgerData::fromJSON(jsonConfig1));
+
+        assertInt(1024, DeviceInfoLedger::instance().getConfigLastRunLog());
+        assertInt(2048, DeviceInfoLedger::instance().getConfigConnectionLog());
+        assertInt(true, DeviceInfoLedger::instance().getConfigIncludeGeneral());
+        assertInt(false, DeviceInfoLedger::instance().getConfigIncludeDiag());
 
         LogLevel level;
         LogCategoryFilters filters;
-        t1.getLogLevelFilters(level, filters);
+        DeviceInfoLedger::instance().getLogLevelFilters(level, filters);
         assertInt(LOG_LEVEL_INFO, level);
         assertInt(0, filters.size());
     }
 
     // Cloud default overrides local config
     {
-        DeviceInfoLedger t1;
+        DeviceConfigLedger::instance().clear();
 
-        t1.withLocalConfig(jsonConfig1);
 
-        assertInt(1024, t1.getConfigLastRunLog());
-        assertInt(2048, t1.getConfigConnectionLog());
-        assertInt(true, t1.getConfigIncludeGeneral());
-        assertInt(false, t1.getConfigIncludeDiag());
+        DeviceConfigLedger::instance().withLocalConfig(jsonConfig1);
+
+        assertInt(1024, DeviceInfoLedger::instance().getConfigLastRunLog());
+        assertInt(2048, DeviceInfoLedger::instance().getConfigConnectionLog());
+        assertInt(true, DeviceInfoLedger::instance().getConfigIncludeGeneral());
+        assertInt(false, DeviceInfoLedger::instance().getConfigIncludeDiag());
 
         LogLevel level;
         LogCategoryFilters filters;
-        t1.getLogLevelFilters(level, filters);
+        DeviceInfoLedger::instance().getLogLevelFilters(level, filters);
         assertInt(LOG_LEVEL_INFO, level);
         assertInt(0, filters.size());
 
-        t1.defaultConfig = LedgerData::fromJSON(jsonConfig2);
+        DeviceConfigLedger::instance().setDefaultConfig(LedgerData::fromJSON(jsonConfig2));
 
-        assertInt(4096, t1.getConfigLastRunLog());
-        assertInt(2048, t1.getConfigConnectionLog());
-        assertInt(true, t1.getConfigIncludeGeneral());
-        assertInt(false, t1.getConfigIncludeDiag());
+        assertInt(4096, DeviceInfoLedger::instance().getConfigLastRunLog());
+        assertInt(2048, DeviceInfoLedger::instance().getConfigConnectionLog());
+        assertInt(true, DeviceInfoLedger::instance().getConfigIncludeGeneral());
+        assertInt(false, DeviceInfoLedger::instance().getConfigIncludeDiag());
 
-        t1.getLogLevelFilters(level, filters);
+        DeviceInfoLedger::instance().getLogLevelFilters(level, filters);
         assertInt(LOG_LEVEL_TRACE, level);
         assertInt(0, filters.size());
     }
 
     // Device overrides local config
     {
-        DeviceInfoLedger t1;
+        DeviceConfigLedger::instance().clear();
 
-        t1.withLocalConfig(jsonConfig1);
+        DeviceConfigLedger::instance().withLocalConfig(jsonConfig1);
 
-        assertInt(1024, t1.getConfigLastRunLog());
-        assertInt(2048, t1.getConfigConnectionLog());
-        assertInt(true, t1.getConfigIncludeGeneral());
-        assertInt(false, t1.getConfigIncludeDiag());
+        assertInt(1024, DeviceInfoLedger::instance().getConfigLastRunLog());
+        assertInt(2048, DeviceInfoLedger::instance().getConfigConnectionLog());
+        assertInt(true, DeviceInfoLedger::instance().getConfigIncludeGeneral());
+        assertInt(false, DeviceInfoLedger::instance().getConfigIncludeDiag());
 
         LogLevel level;
         LogCategoryFilters filters;
-        t1.getLogLevelFilters(level, filters);
+        DeviceInfoLedger::instance().getLogLevelFilters(level, filters);
         assertInt(LOG_LEVEL_INFO, level);
         assertInt(0, filters.size());
 
-        t1.deviceConfig = LedgerData::fromJSON(jsonConfig2);
+        DeviceConfigLedger::instance().setDeviceConfig(LedgerData::fromJSON(jsonConfig2));
 
-        assertInt(4096, t1.getConfigLastRunLog());
-        assertInt(2048, t1.getConfigConnectionLog());
-        assertInt(true, t1.getConfigIncludeGeneral());
-        assertInt(false, t1.getConfigIncludeDiag());
+        assertInt(4096, DeviceInfoLedger::instance().getConfigLastRunLog());
+        assertInt(2048, DeviceInfoLedger::instance().getConfigConnectionLog());
+        assertInt(true, DeviceInfoLedger::instance().getConfigIncludeGeneral());
+        assertInt(false, DeviceInfoLedger::instance().getConfigIncludeDiag());
 
-        t1.getLogLevelFilters(level, filters);
+        DeviceInfoLedger::instance().getLogLevelFilters(level, filters);
         assertInt(LOG_LEVEL_TRACE, level);
         assertInt(0, filters.size());
     }    
 
     // Device config overrides cloud config
     {
-        DeviceInfoLedger t1;
+        DeviceConfigLedger::instance().clear();
 
-        t1.defaultConfig = LedgerData::fromJSON(jsonConfig1);
+        DeviceConfigLedger::instance().setDefaultConfig(LedgerData::fromJSON(jsonConfig1));
 
-        assertInt(1024, t1.getConfigLastRunLog());
-        assertInt(2048, t1.getConfigConnectionLog());
-        assertInt(true, t1.getConfigIncludeGeneral());
-        assertInt(false, t1.getConfigIncludeDiag());
+        assertInt(1024, DeviceInfoLedger::instance().getConfigLastRunLog());
+        assertInt(2048, DeviceInfoLedger::instance().getConfigConnectionLog());
+        assertInt(true, DeviceInfoLedger::instance().getConfigIncludeGeneral());
+        assertInt(false, DeviceInfoLedger::instance().getConfigIncludeDiag());
 
         LogLevel level;
         LogCategoryFilters filters;
-        t1.getLogLevelFilters(level, filters);
+        DeviceInfoLedger::instance().getLogLevelFilters(level, filters);
         assertInt(LOG_LEVEL_INFO, level);
         assertInt(0, filters.size());
 
-        t1.deviceConfig = LedgerData::fromJSON(jsonConfig2);
+        DeviceConfigLedger::instance().setDeviceConfig(LedgerData::fromJSON(jsonConfig2));
 
-        assertInt(4096, t1.getConfigLastRunLog());
-        assertInt(2048, t1.getConfigConnectionLog());
-        assertInt(true, t1.getConfigIncludeGeneral());
-        assertInt(false, t1.getConfigIncludeDiag());
+        assertInt(4096, DeviceInfoLedger::instance().getConfigLastRunLog());
+        assertInt(2048, DeviceInfoLedger::instance().getConfigConnectionLog());
+        assertInt(true, DeviceInfoLedger::instance().getConfigIncludeGeneral());
+        assertInt(false, DeviceInfoLedger::instance().getConfigIncludeDiag());
 
-        t1.getLogLevelFilters(level, filters);
+        DeviceInfoLedger::instance().getLogLevelFilters(level, filters);
         assertInt(LOG_LEVEL_TRACE, level);
         assertInt(0, filters.size());
     }    
 
     // Three levels of config
     {
-        DeviceInfoLedger t1;
+        DeviceConfigLedger::instance().clear();
+
         LogLevel level;
         LogCategoryFilters filters;
 
-        t1.withLocalConfig(jsonConfig3);
+        DeviceConfigLedger::instance().withLocalConfig(jsonConfig3);
 
-        assertInt(1024, t1.getConfigLastRunLog());
-        assertInt(1024, t1.getConfigConnectionLog());
-        assertInt(true, t1.getConfigIncludeGeneral());
-        assertInt(false, t1.getConfigIncludeDiag());
-        assertInt(false, t1.getConfigIncludeTower());
+        assertInt(1024, DeviceInfoLedger::instance().getConfigLastRunLog());
+        assertInt(1024, DeviceInfoLedger::instance().getConfigConnectionLog());
+        assertInt(true, DeviceInfoLedger::instance().getConfigIncludeGeneral());
+        assertInt(false, DeviceInfoLedger::instance().getConfigIncludeDiag());
+        assertInt(false, DeviceInfoLedger::instance().getConfigIncludeTower());
 
-        t1.getLogLevelFilters(level, filters);
+        DeviceInfoLedger::instance().getLogLevelFilters(level, filters);
         assertInt(LOG_LEVEL_ERROR, level);
         assertInt(0, filters.size());
 
 
-        t1.defaultConfig = LedgerData::fromJSON(jsonConfig1);
+        DeviceConfigLedger::instance().setDefaultConfig(LedgerData::fromJSON(jsonConfig1));
 
-        assertInt(1024, t1.getConfigLastRunLog());
-        assertInt(2048, t1.getConfigConnectionLog());
-        assertInt(true, t1.getConfigIncludeGeneral());
-        assertInt(false, t1.getConfigIncludeDiag());
-        assertInt(false, t1.getConfigIncludeDiag());
-        assertInt(false, t1.getConfigIncludeTower());
+        assertInt(1024, DeviceInfoLedger::instance().getConfigLastRunLog());
+        assertInt(2048, DeviceInfoLedger::instance().getConfigConnectionLog());
+        assertInt(true, DeviceInfoLedger::instance().getConfigIncludeGeneral());
+        assertInt(false, DeviceInfoLedger::instance().getConfigIncludeDiag());
+        assertInt(false, DeviceInfoLedger::instance().getConfigIncludeDiag());
+        assertInt(false, DeviceInfoLedger::instance().getConfigIncludeTower());
 
-        t1.deviceConfig = LedgerData::fromJSON(jsonConfig4);
+        DeviceConfigLedger::instance().setDeviceConfig(LedgerData::fromJSON(jsonConfig4));
 
-        assertInt(1024, t1.getConfigLastRunLog());
-        assertInt(4096, t1.getConfigConnectionLog());
-        assertInt(true, t1.getConfigIncludeGeneral());
-        assertInt(false, t1.getConfigIncludeDiag());
-        assertInt(false, t1.getConfigIncludeDiag());
-        assertInt(true, t1.getConfigIncludeTower());
+        assertInt(1024, DeviceInfoLedger::instance().getConfigLastRunLog());
+        assertInt(4096, DeviceInfoLedger::instance().getConfigConnectionLog());
+        assertInt(true, DeviceInfoLedger::instance().getConfigIncludeGeneral());
+        assertInt(false, DeviceInfoLedger::instance().getConfigIncludeDiag());
+        assertInt(false, DeviceInfoLedger::instance().getConfigIncludeDiag());
+        assertInt(true, DeviceInfoLedger::instance().getConfigIncludeTower());
 
-        t1.getLogLevelFilters(level, filters);
+        DeviceInfoLedger::instance().getLogLevelFilters(level, filters);
         assertInt(LOG_LEVEL_INFO, level);
         assertInt(0, filters.size());
 
@@ -304,13 +303,13 @@ void runUnitTests() {
 
     // Filters from JSON
     {
-        DeviceInfoLedger t1;
+        DeviceConfigLedger::instance().clear();
         LogLevel level;
         LogCategoryFilters filters;
 
-        t1.withLocalConfig(jsonConfig5);
+        DeviceConfigLedger::instance().withLocalConfig(jsonConfig5);
 
-        t1.getLogLevelFilters(level, filters);
+        DeviceInfoLedger::instance().getLogLevelFilters(level, filters);
         assertInt(LOG_LEVEL_INFO, level);
         assertInt(1, filters.size());
 
@@ -320,15 +319,15 @@ void runUnitTests() {
 
     // Filters from code
     {
-        DeviceInfoLedger t1;
+        DeviceConfigLedger::instance().clear();
         LogLevel level;
         LogCategoryFilters filters;
 
-        t1.setLocalConfigLogLevel(LOG_LEVEL_INFO, {
+        DeviceInfoLedger::instance().setLocalConfigLogLevel(LOG_LEVEL_INFO, {
             { "app.devinfo", LOG_LEVEL_TRACE }
         });
 
-        t1.getLogLevelFilters(level, filters);
+        DeviceInfoLedger::instance().getLogLevelFilters(level, filters);
         assertInt(LOG_LEVEL_INFO, level);
         assertInt(1, filters.size());
 
@@ -338,22 +337,22 @@ void runUnitTests() {
 
     // Log filter merging - local config (JSON) + device config (no overlap)
     {
-        DeviceInfoLedger t1;
+        DeviceConfigLedger::instance().clear();
         LogLevel level;
         LogCategoryFilters filters;
 
-        t1.withLocalConfig(jsonConfig6);
+        DeviceConfigLedger::instance().withLocalConfig(jsonConfig6);
 
-        t1.getLogLevelFilters(level, filters);
+        DeviceInfoLedger::instance().getLogLevelFilters(level, filters);
         assertInt(LOG_LEVEL_INFO, level);
         assertInt(1, filters.size());
 
         assertString("app.devinfo", filters.at(0).category());
         assertInt(LOG_LEVEL_INFO, filters.at(0).level());
 
-        t1.deviceConfig = LedgerData::fromJSON(jsonConfig7);
+        DeviceConfigLedger::instance().setDefaultConfig(LedgerData::fromJSON(jsonConfig7));
 
-        t1.getLogLevelFilters(level, filters);
+        DeviceInfoLedger::instance().getLogLevelFilters(level, filters);
         assertInt(LOG_LEVEL_INFO, level);
         assertInt(2, filters.size());
 
@@ -367,22 +366,22 @@ void runUnitTests() {
 
     // Log filter merging - local config (JSON) + device config override category
     {
-        DeviceInfoLedger t1;
+        DeviceConfigLedger::instance().clear();
         LogLevel level;
         LogCategoryFilters filters;
 
-        t1.withLocalConfig(jsonConfig6);
+        DeviceConfigLedger::instance().withLocalConfig(jsonConfig6);
 
-        t1.getLogLevelFilters(level, filters);
+        DeviceInfoLedger::instance().getLogLevelFilters(level, filters);
         assertInt(LOG_LEVEL_INFO, level);
         assertInt(1, filters.size());
 
         assertString("app.devinfo", filters.at(0).category());
         assertInt(LOG_LEVEL_INFO, filters.at(0).level());
 
-        t1.deviceConfig = LedgerData::fromJSON(jsonConfig5);
+        DeviceConfigLedger::instance().setDeviceConfig(LedgerData::fromJSON(jsonConfig5));
 
-        t1.getLogLevelFilters(level, filters);
+        DeviceInfoLedger::instance().getLogLevelFilters(level, filters);
         assertInt(LOG_LEVEL_INFO, level);
         assertInt(1, filters.size());
 
@@ -393,13 +392,13 @@ void runUnitTests() {
 
     // Filters array in device config overrides local    
     {
-        DeviceInfoLedger t1;
+        DeviceConfigLedger::instance().clear();
         LogLevel level;
         LogCategoryFilters filters;
 
-        t1.withLocalConfig(jsonConfig6);
+        DeviceConfigLedger::instance().withLocalConfig(jsonConfig6);
 
-        t1.getLogLevelFilters(level, filters);
+        DeviceInfoLedger::instance().getLogLevelFilters(level, filters);
         assertInt(LOG_LEVEL_INFO, level);
         assertInt(1, filters.size());
 
@@ -407,9 +406,9 @@ void runUnitTests() {
         assertString("app.devinfo", filters.at(0).category());
 
 
-        t1.deviceConfig = LedgerData::fromJSON(jsonConfig5);
+        DeviceConfigLedger::instance().setDeviceConfig(LedgerData::fromJSON(jsonConfig5));
 
-        t1.getLogLevelFilters(level, filters);
+        DeviceInfoLedger::instance().getLogLevelFilters(level, filters);
         assertInt(LOG_LEVEL_INFO, level);
         assertInt(1, filters.size());
 
@@ -431,18 +430,18 @@ void runUnitTests() {
     "}";
 
     {
-        DeviceInfoLedger t1;
+        DeviceConfigLedger::instance().clear();
 
-        t1.defaultConfig = LedgerData::fromJSON(jsonConfig100);
+        DeviceConfigLedger::instance().setDefaultConfig(LedgerData::fromJSON(jsonConfig100));
 
-        assertInt(123, t1.getConfigInt("a"));
-        assertInt(true, t1.getConfigBool("b"));
-        assertString("test", t1.getConfigString("c").c_str());
+        assertInt(123, DeviceConfigLedger::instance().getConfigInt("a"));
+        assertInt(true, DeviceConfigLedger::instance().getConfigBool("b"));
+        assertString("test", DeviceConfigLedger::instance().getConfigString("c").c_str());
 
 
-        t1.deviceConfig = LedgerData::fromJSON(jsonConfig101);
+        DeviceConfigLedger::instance().setDeviceConfig(LedgerData::fromJSON(jsonConfig101));
 
-        assertInt(456, t1.getConfigInt("a"));
+        assertInt(456, DeviceConfigLedger::instance().getConfigInt("a"));
     }
 
     // Array merge
@@ -457,20 +456,20 @@ void runUnitTests() {
 
 
     {
-        DeviceInfoLedger t1;
+        DeviceConfigLedger::instance().clear();
         Variant a;
 
-        t1.defaultConfig = LedgerData::fromJSON(jsonConfig110);
+        DeviceConfigLedger::instance().setDefaultConfig(LedgerData::fromJSON(jsonConfig110));
 
-        a = t1.getConfigVariant("a");
+        a = DeviceConfigLedger::instance().getConfigVariant("a");
         assertInt(2, a.size());
         assertInt(1, a.at(0).toInt());
         assertInt(2, a.at(1).toInt());
 
 
-        t1.deviceConfig = LedgerData::fromJSON(jsonConfig111);
+       DeviceConfigLedger::instance().setDeviceConfig(LedgerData::fromJSON(jsonConfig111));
 
-        a = t1.getConfigVariant("a");
+        a = DeviceConfigLedger::instance().getConfigVariant("a");
         assertInt(3, a.size());
         assertInt(1, a.at(0).toInt());
         assertInt(2, a.at(1).toInt());
@@ -495,20 +494,20 @@ void runUnitTests() {
     "}";
 
     {
-        DeviceInfoLedger t1;
+        DeviceConfigLedger::instance().clear();
         Variant x;
 
-        t1.defaultConfig = LedgerData::fromJSON(jsonConfig120);
+        DeviceConfigLedger::instance().setDefaultConfig(LedgerData::fromJSON(jsonConfig120));
 
-        x = t1.getConfigVariant("x");
+        x = DeviceConfigLedger::instance().getConfigVariant("x");
         assertInt(123, x.get("a").toInt());
         assertInt(true, x.get("b").toBool());
         assertString("test", x.get("c").toString().c_str());
 
 
-        t1.deviceConfig = LedgerData::fromJSON(jsonConfig121);
+        DeviceConfigLedger::instance().setDeviceConfig(LedgerData::fromJSON(jsonConfig121));
 
-        x = t1.getConfigVariant("x");
+        x = DeviceConfigLedger::instance().getConfigVariant("x");
         assertInt(456, x.get("a").toInt());
     }
 

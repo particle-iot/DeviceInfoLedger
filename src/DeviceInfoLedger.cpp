@@ -1,9 +1,106 @@
 #include "DeviceInfoLedger.h"
 
 
+DeviceConfigLedger *DeviceConfigLedger::_instance;
 DeviceInfoLedger *DeviceInfoLedger::_instance;
 
 static Logger _deviceInfoLog("app.devinfo");
+
+//
+// DeviceConfigLedger
+//
+// [static]
+DeviceConfigLedger &DeviceConfigLedger::instance() {
+    if (!_instance) {
+        _instance = new DeviceConfigLedger();
+    }
+    return *_instance;
+}
+
+DeviceConfigLedger::DeviceConfigLedger() {
+}
+
+DeviceConfigLedger::~DeviceConfigLedger() {
+}
+
+void DeviceConfigLedger::setup() {
+#ifndef UNITTEST
+    // Set up ledgers
+
+    if (configDefaultLedgerEnabled) {
+        configDefaultLedger = Particle.ledger(configDefaultLedgerName);
+        configDefaultLedger.onSync([this](Ledger ledger) {
+            defaultConfig = ledger.get();
+        });
+        defaultConfig = configDefaultLedger.get();
+    }
+
+
+    if (configDeviceLedgerEnabled) {
+        configDeviceLedger = Particle.ledger(configDeviceLedgerName);
+        configDeviceLedger.onSync([this](Ledger ledger) {
+            deviceConfig = ledger.get();
+        });
+        deviceConfig = configDeviceLedger.get();
+    }
+
+#endif // UNITTEST
+
+}
+
+void DeviceConfigLedger::callUpdateCallbacks() {
+    for(auto cb : updateCallbacks) {
+        cb();
+    }
+}
+
+
+Variant DeviceConfigLedger::getConfigVariant(const char *key, Variant defaultValue) const {
+    Variant result;
+
+    // sources is lowest priority first; later ones overwrite earlier keys
+    Vector<Variant> sources;
+    if (localConfig.has(key)) {
+        sources.append(localConfig.get(key));
+    }
+    if (defaultConfig.has(key)) {
+        sources.append(defaultConfig.get(key));
+    }
+    if (deviceConfig.has(key)) {
+        sources.append(deviceConfig.get(key));
+    }
+
+    for(Variant source : sources) {
+        if (source.isMap()) {
+            for(Map<String,Variant>::Entry entry : source.asMap().entries()) {
+                result.set(entry.first, entry.second);
+            }
+        }  
+        else
+        if (source.isArray()) {
+            for(int ii = 0; ii < source.size(); ii++) {
+                result.append(source.at(ii));
+            }
+        }
+        else {
+            result = source;
+        }
+    }
+
+    return result;
+}
+
+void DeviceConfigLedger::clear() {
+    defaultConfig = LedgerData();
+    localConfig = LedgerData();
+    deviceConfig = LedgerData();
+}
+
+
+
+//
+// DeviceInfoLedger
+//
 
 // [static]
 DeviceInfoLedger &DeviceInfoLedger::instance() {
@@ -33,25 +130,6 @@ void DeviceInfoLedger::setup() {
 
     // Set up ledgers
     infoLedger = Particle.ledger(infoLedgerName);
-
-    if (configDefaultLedgerEnabled) {
-        configDefaultLedger = Particle.ledger(configDefaultLedgerName);
-        configDefaultLedger.onSync([this](Ledger ledger) {
-            defaultConfig = ledger.get();
-            updateConfig();
-        });
-        defaultConfig = configDefaultLedger.get();
-    }
-
-
-    if (configDeviceLedgerEnabled) {
-        configDeviceLedger = Particle.ledger(configDeviceLedgerName);
-        configDeviceLedger.onSync([this](Ledger ledger) {
-            deviceConfig = ledger.get();
-        });
-        deviceConfig = configDeviceLedger.get();
-    }
-    updateConfig();
 
     // Check retained buffer
     if (retainedBuffer && retainedBufferSize && retainedBufferSize > sizeof(RetainedBufferHeader)) {
@@ -170,40 +248,6 @@ void DeviceInfoLedger::loop() {
 }
 
 
-Variant DeviceInfoLedger::getConfigVariant(const char *key, Variant defaultValue) const {
-    Variant result;
-
-    // sources is lowest priority first; later ones overwrite earlier keys
-    Vector<Variant> sources;
-    if (localConfig.has(key)) {
-        sources.append(localConfig.get(key));
-    }
-    if (defaultConfig.has(key)) {
-        sources.append(defaultConfig.get(key));
-    }
-    if (deviceConfig.has(key)) {
-        sources.append(deviceConfig.get(key));
-    }
-
-    for(Variant source : sources) {
-        if (source.isMap()) {
-            for(Map<String,Variant>::Entry entry : source.asMap().entries()) {
-                result.set(entry.first, entry.second);
-            }
-        }  
-        else
-        if (source.isArray()) {
-            for(int ii = 0; ii < source.size(); ii++) {
-                result.append(source.at(ii));
-            }
-        }
-        else {
-            result = source;
-        }
-    }
-
-    return result;
-}
 
 
 bool DeviceInfoLedger::setLocalConfigLogLevel(LogLevel level, LogCategoryFilters filters) {

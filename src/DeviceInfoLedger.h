@@ -18,76 +18,51 @@ using namespace particle;
  * This class is a singleton; you do not create one as a global, on the stack, or with new.
  * 
  * From global application setup you must call:
- * DeviceInfoLedger::instance().setup();
+ * DeviceConfigLedger::instance().setup();
  * 
  * From global application loop you must call:
- * DeviceInfoLedger::instance().loop();
+ * DeviceConfigLedger::instance().loop();
  */
-class DeviceInfoLedger {
-    /**
-     * @brief Header for structure in retained memory 
-     */
-    struct RetainedBufferHeader { // 12 bytes
-        uint32_t    magic;
-        uint16_t    size;
-        uint8_t     headerSize;
-        uint8_t     reserved1;
-        std::atomic<uint32_t>   offset;
-    };
-
+class DeviceConfigLedger {
+public:
 public:
     /**
      * @brief Gets the singleton instance of this class, allocating it if necessary
      * 
-     * Use DeviceInfoLedger::instance() to instantiate the singleton.
+     * Use DeviceConfigLedger::instance() to instantiate the singleton.
      */
-    static DeviceInfoLedger &instance();
+    static DeviceConfigLedger &instance();
 
     /**
      * @brief Enable default configuration from the cloud using a cloud to device product, owner, or organization ledger.
      * 
      * @param value enable (true) or disable (false)
-     * @return DeviceInfoLedger& A reference to this object to chain withXXX() calls, fluent style. 
+     * @return DeviceConfigLedger& A reference to this object to chain withXXX() calls, fluent style. 
      * 
      * The class default is disabled; calling this with no parameter will enable it. The default name is "device-info-defaults".
      * 
      * Must be called before setup().
      */
-    DeviceInfoLedger &withConfigDefaultLedgerEnabled(bool value = true) { configDefaultLedgerEnabled = value; return *this; };
+    DeviceConfigLedger &withConfigDefaultLedgerEnabled(bool value = true) { configDefaultLedgerEnabled = value; return *this; };
 
     /**
      * @brief Enable per-device configuration from the cloud using a cloud to device ledger.
      * 
      * @param value enable (true) or disable (false)
-     * @return DeviceInfoLedger& A reference to this object to chain withXXX() calls, fluent style. 
+     * @return DeviceConfigLedger& A reference to this object to chain withXXX() calls, fluent style. 
      * 
      * The class default is disabled; calling this with no parameter will enable it. The default name is "device-info-config".
      * 
      * Must be called before setup().
      */
-    DeviceInfoLedger &withConfigDeviceLedgerEnabled(bool value = true) { configDeviceLedgerEnabled = value; return *this; };
+    DeviceConfigLedger &withConfigDeviceLedgerEnabled(bool value = true) { configDeviceLedgerEnabled = value; return *this; };
 
-
-    /**
-     * @brief Change the device to cloud ledger that holds the device information.
-     * 
-     * @param infoLedgerName New name to use.
-     * @return DeviceInfoLedger& A reference to this object to chain withXXX() calls, fluent style. 
-     * 
-     * Default is "device-info". 
-     * 
-     * Must be called before setup().
-     */
-    DeviceInfoLedger &withInfoLedgerName(const char *infoLedgerName) {
-        this->infoLedgerName = infoLedgerName;
-        return *this;
-    }
 
     /**
      * @brief Set a cloud to device ledger to use to configure default settings.
      * 
      * @param configDefaultLedgerName Name of the ledger to use
-     * @return DeviceInfoLedger& A reference to this object to chain withXXX() calls, fluent style. 
+     * @return DeviceConfigLedger& A reference to this object to chain withXXX() calls, fluent style. 
      *
      * The default Ledger name is "device-info-defaults" but defaults to disabled. To use the default
      * name, use withConfigDefaultLedgerEnabled() to enable the cloud to device default settings ledger.
@@ -96,7 +71,7 @@ public:
      * 
      * Must be called before setup().
      */
-    DeviceInfoLedger &withConfigDefaultLedgerName(const char *configDefaultLedgerName) {
+    DeviceConfigLedger &withConfigDefaultLedgerName(const char *configDefaultLedgerName) {
         this->configDefaultLedgerName = configDefaultLedgerName;
         this->configDefaultLedgerEnabled = true;
         return *this;
@@ -106,7 +81,7 @@ public:
      * @brief Set a cloud to device ledger to use to configure device settings.
      * 
      * @param configDeviceLedgerName Name of the ledger to use 
-     * @return DeviceInfoLedger& A reference to this object to chain withXXX() calls, fluent style. 
+     * @return DeviceConfigLedger& A reference to this object to chain withXXX() calls, fluent style. 
      * 
      * The default Ledger name is "device-info-config" but defaults to disabled. To use the default
      * name, use withConfigDeviceLedgerEnabled() to enable the cloud to device device settings ledger.
@@ -115,7 +90,7 @@ public:
      * 
      * Must be called before setup().
      */
-    DeviceInfoLedger &withConfigDeviceLedgerName(const char *configDeviceLedgerName) {
+    DeviceConfigLedger &withConfigDeviceLedgerName(const char *configDeviceLedgerName) {
         this->configDeviceLedgerName = configDeviceLedgerName;
         this->configDeviceLedgerEnabled = true;
         return *this;
@@ -125,50 +100,41 @@ public:
      * @brief Use a locally defined configuration (specified with a string of JSON) instead of configDefaultLedger
      * 
      * @param jsonStr The JSON value as a c-string
-     * @return DeviceInfoLedger& A reference to this object to chain withXXX() calls, fluent style. 
+     * @return DeviceConfigLedger& A reference to this object to chain withXXX() calls, fluent style. 
      * 
      * A key's value is determined by the per-device cloud settings (highest preference), cloud default config, and
      * local config (lowest preference). If you are not using cloud ledgers, then of course the local config
      * is always used since the others will not exist.
      */
-    DeviceInfoLedger &withLocalConfig(const char *jsonStr) { localConfig = LedgerData::fromJSON(jsonStr); return *this; };
+    DeviceConfigLedger &withLocalConfig(const char *jsonStr) { localConfig = LedgerData::fromJSON(jsonStr); return *this; };
 
 
     /**
-     * @brief Retained buffer for use mainly to save log information in a circular buffer.
+     * @brief Adds a function to call when configuration is updated
      * 
-     * @param retainedBuffer 
-     * @param retainedBufferSize 
-     * @return DeviceInfoLedger& A reference to this object to chain withXXX() calls, fluent style. 
+     * @param callback 
+     * @return DeviceConfigLedger& 
      * 
-     * This log may be useful for debugging problems that cause a device panic, or similar issues that
-     * occur before a device reboot.
-     * 
-     * Because of the way retained memory works on RTL872x devices (P2/Photon 2), this log may be missing
-     * the latest data written to the log.
-     * 
-     * Must be called before setup().
+     * You can use this more than one; the callbacks are a vector. You cannot remove one once added!
      */
-    DeviceInfoLedger &withRetainedBuffer(uint8_t *retainedBuffer, size_t retainedBufferSize) {
-        this->retainedBuffer = retainedBuffer;
-        this->retainedBufferSize = retainedBufferSize;
-        return *this;
-    }
+    DeviceConfigLedger &withUpdateCallback(std::function<void()> callback) { updateCallbacks.push_back(callback); return *this; };
+
+    /**
+     * @brief Call updateCallbacks
+     */
+    void callUpdateCallbacks();
+
+
 
     /**
      * @brief Perform setup operations; call this from global application setup()
      * 
-     * You typically use DeviceInfoLedger::instance().setup();
+     * You typically use DeviceConfigLedger::instance().setup();
      * 
      * This must only be called once at boot and not again. You cannot use this to reconfigure settings!
      */
     void setup();
-    /**
-     * @brief Perform application loop operations; call this from global application loop()
-     * 
-     * You typically use DeviceInfoLedger::instance().loop();
-     */
-    void loop();
+
 
     /**
      * @brief Get a bool (boolean) configuration setting from local settings or cloud configuration (default or device override)
@@ -223,7 +189,7 @@ public:
      * @param value Value to set to
      * @return true if successfully set, false if not
      */
-    bool setLocalConfigBool(const char *key, double value) { return setLocalConfigVariant(key, Variant(value)); };
+    bool setLocalConfigDouble(const char *key, double value) { return setLocalConfigVariant(key, Variant(value)); };
 
     /**
      * @brief Get a String configuration setting from local settings or cloud configuration (default or device override)
@@ -264,6 +230,327 @@ public:
     bool setLocalConfigVariant(const char *key, Variant value) {
         return localConfig.set(key, value);
     }
+
+    /**
+     * @brief Clears the LedgerData (defaultConfig, localConfig, deviceConfig)
+     * 
+     * It does not reset other settings. You will not normally need to use this, but this
+     * method is used by the unit tests.
+     */
+    void clear();
+
+
+    /**
+     * @brief Update the localConfig ledger data Variant and call the update callbacks
+     * 
+     * @param data The new data to replace the old data
+     * 
+     * You will probably never need to call this; it's used internally from the ledger
+     * sync callback. It's public because it's used by the unit tests.
+     */
+    void setLocalConfig(const LedgerData &data) { localConfig = data; callUpdateCallbacks(); };
+
+    /**
+     * @brief Update the defaultConfig ledger data Variant and call the update callbacks
+     * 
+     * @param data The new data to replace the old data
+     * 
+     * You will probably never need to call this; it's used internally from the ledger
+     * sync callback. It's public because it's used by the unit tests.
+     */
+    void setDefaultConfig(const LedgerData &data) { defaultConfig = data; callUpdateCallbacks(); };
+
+    /**
+     * @brief Update the deviceConfig ledger data Variant and call the update callbacks
+     * 
+     * @param data The new data to replace the old data
+     * 
+     * You will probably never need to call this; it's used internally from the ledger
+     * sync callback. It's public because it's used by the unit tests.
+     */
+    void setDeviceConfig(const LedgerData &data) { deviceConfig = data; callUpdateCallbacks(); };
+
+protected:
+
+    /**
+     * @brief The constructor is protected because the class is a singleton
+     * 
+     * Use DeviceConfigLedger::instance() to instantiate the singleton.
+     */
+    DeviceConfigLedger();
+
+    /**
+     * @brief The destructor is protected because the class is a singleton and cannot be deleted
+     */
+    virtual ~DeviceConfigLedger();
+
+    /**
+     * This class is a singleton and cannot be copied
+     */
+    DeviceConfigLedger(const DeviceConfigLedger&) = delete;
+
+    /**
+     * This class is a singleton and cannot be copied
+     */
+    DeviceConfigLedger& operator=(const DeviceConfigLedger&) = delete;
+
+
+    /**
+     * @brief The current default config from the cloud
+     */
+    LedgerData defaultConfig;
+
+    /**
+     * @brief Local configuration (set by JSON or accessors)
+     */
+    LedgerData localConfig;
+    
+    /**
+     * @brief The current device override config from the cloud
+     */
+    LedgerData deviceConfig;
+
+    /**
+     * @brief Name of the default config ledger
+     * 
+     * Enable the ledger using withConfigDefaultLedgerEnabled (before setup),
+     * Change name using withConfigDefaultLedgerName() (before setup).
+     */
+    String configDefaultLedgerName = "device-info-defaults"; //
+
+    /**
+     * @brief Name of the device-specific config override ledger
+     * 
+     * Enable the ledger using withConfigDeviceLedgerEnabled (before setup),
+     * Change name using withConfigDeviceLedgerName() (before setup).
+     */
+    String configDeviceLedgerName = "device-info-config"; 
+
+#ifndef UNITTEST
+    /**
+     * @brief Ledger default configuration, initialized during setup if enabled
+     */
+    Ledger configDefaultLedger;
+
+    /**
+     * @brief Ledger device-specific override configuration, initialized during setup if enabled
+     */
+    Ledger configDeviceLedger;
+#endif // UNITTEST
+
+    /**
+     * @brief Flag if config defaults ledger is enabled
+     */
+    bool configDefaultLedgerEnabled = false;
+
+    /**
+     * @brief Flags if config device-specific overrides are enabled
+     */
+    bool configDeviceLedgerEnabled = false;
+
+    /**
+     * @brief Callback functions to call when configuration is updated
+     * 
+     */
+    std::vector<std::function<void()>> updateCallbacks;
+
+
+    /**
+     * @brief Singleton instance of this class
+     * 
+     * The object pointer to this class is stored here. It's NULL at system boot.
+     */
+    static DeviceConfigLedger *_instance;
+};
+
+/**
+ * @brief Wrapper to simplify calling the config methods
+ * 
+ * Since the config class is a singleton, the syntax for using the method is a little awkward, such as:
+ * 
+ * DeviceInfoConfig::instance().getConfigString("test")
+ * 
+ * You make this wrapper a parent class of your class, which makes it possible to just call:
+ * 
+ * getConfigString("test")
+ */
+class DeviceConfigWrapper {
+public:
+    /**
+     * @brief Get a bool (boolean) configuration setting from local settings or cloud configuration (default or device override)
+     * 
+     * @param key Key to read in the top level of the configuration object
+     * @param defaultValue Value to be returned if the key does not exist
+     * @return true or false depending on the configuration setting or defaultValue.
+     */
+    bool getConfigBool(const char *key, bool defaultValue = false) const { return DeviceConfigLedger::instance().getConfigBool(key, defaultValue); };
+
+    /**
+     * @brief Set a local config setting using a bool
+     * 
+     * @param key Key to set
+     * @param value Value to set to
+     * @return true if successfully set, false if not
+     */
+    bool setLocalConfigBool(const char *key, bool value) { return DeviceConfigLedger::instance().setLocalConfigBool(key, value); };
+
+    /**
+     * @brief Get an int (32-bit signed integer) configuration setting from local settings or cloud configuration (default or device override)
+     * 
+     * @param key Key to read in the top level of the configuration object
+     * @param defaultValue Value to be returned if the key does not exist
+     * @return true or false depending on the configuration setting or defaultValue.
+     */
+    int getConfigInt(const char *key, int defaultValue = 0) const { return DeviceConfigLedger::instance().getConfigInt(key, defaultValue); };
+
+    /**
+     * @brief Set a local config setting using an int (signed 32-bit integer)
+     * 
+     * @param key Key to set
+     * @param value Value to set to
+     * @return true if successfully set, false if not
+     */
+    bool setLocalConfigInt(const char *key, int value) { return DeviceConfigLedger::instance().setLocalConfigInt(key, value); };
+
+
+    /**
+     * @brief Get a double (64-bit floating point) configuration setting from local settings or cloud configuration (default or device override)
+     * 
+     * @param key Key to read in the top level of the configuration object
+     * @param defaultValue Value to be returned if the key does not exist
+     * @return true or false depending on the configuration setting or defaultValue.
+     */
+    double getConfigDouble(const char *key, double defaultValue = 0.0) const { return DeviceConfigLedger::instance().getConfigDouble(key, defaultValue); };
+
+    /**
+     * @brief Set a local config setting using a double (64-bit floating point)
+     * 
+     * @param key Key to set
+     * @param value Value to set to
+     * @return true if successfully set, false if not
+     */
+    bool setLocalConfigDouble(const char *key, double value) { return DeviceConfigLedger::instance().setLocalConfigDouble(key, value); };
+
+    /**
+     * @brief Get a String configuration setting from local settings or cloud configuration (default or device override)
+     * 
+     * @param key Key to read in the top level of the configuration object
+     * @param defaultValue Value to be returned if the key does not exist
+     * @return true or false depending on the configuration setting or defaultValue.
+     */
+    String getConfigString(const char *key, const char *defaultValue = "") const { return DeviceConfigLedger::instance().getConfigString(key, defaultValue); };
+
+    /**
+     * @brief Set a local config setting using a c-string (null-terminated UTF-8, const char *)
+     * 
+     * @param key Key to set
+     * @param value Value to set to
+     * @return true if successfully set, false if not
+     */
+    bool setLocalConfigString(const char *key, const char *value) { return DeviceConfigLedger::instance().setLocalConfigString(key, value); };
+
+    /**
+     * @brief Get a configuration setting from local settings or cloud configuration (default or device override)
+     *  
+     * @param key Top level key in the ledger
+     * @param defaultValue Value to be returned if the key does not exist
+     * @return Variant Return Variant, see also getConfigBool, getConfigInt, ... that wrap this method
+     */
+    Variant getConfigVariant(const char *key, Variant defaultValue = {}) const { return DeviceConfigLedger::instance().getConfigVariant(key, defaultValue);};
+
+    /**
+     * @brief Set a local config setting using a Variant
+     * 
+     * @param key Key to set
+     * @param value Value to set to
+     * @return true if successfully set, false if not
+     * 
+     * See also overloads for specific types such as setLocalConfigBool, setLocalConfigInt, etc.
+     */
+    bool setLocalConfigVariant(const char *key, Variant value) { return DeviceConfigLedger::instance().setLocalConfigVariant(key, value); };
+
+};
+
+/**
+ * This class is a singleton; you do not create one as a global, on the stack, or with new.
+ * 
+ * From global application setup you must call:
+ * DeviceInfoLedger::instance().setup();
+ * 
+ * From global application loop you must call:
+ * DeviceInfoLedger::instance().loop();
+ */
+class DeviceInfoLedger : public DeviceConfigWrapper {
+    /**
+     * @brief Header for structure in retained memory 
+     */
+    struct RetainedBufferHeader { // 12 bytes
+        uint32_t    magic;
+        uint16_t    size;
+        uint8_t     headerSize;
+        uint8_t     reserved1;
+        std::atomic<uint32_t>   offset;
+    };
+
+public:
+    /**
+     * @brief Gets the singleton instance of this class, allocating it if necessary
+     * 
+     * Use DeviceInfoLedger::instance() to instantiate the singleton.
+     */
+    static DeviceInfoLedger &instance();
+
+
+    /**
+     * @brief Change the device to cloud ledger that holds the device information.
+     * 
+     * @param infoLedgerName New name to use.
+     * @return DeviceConfigLedger& A reference to this object to chain withXXX() calls, fluent style. 
+     * 
+     * Default is "device-info". 
+     * 
+     * Must be called before setup().
+     */
+    DeviceInfoLedger &withInfoLedgerName(const char *infoLedgerName) {
+        this->infoLedgerName = infoLedgerName;
+        return *this;
+    }
+
+    /**
+     * @brief Retained buffer for use mainly to save log information in a circular buffer.
+     * 
+     * @param retainedBuffer 
+     * @param retainedBufferSize 
+     * @return DeviceInfoLedger& A reference to this object to chain withXXX() calls, fluent style. 
+     * 
+     * This log may be useful for debugging problems that cause a device panic, or similar issues that
+     * occur before a device reboot.
+     * 
+     * Because of the way retained memory works on RTL872x devices (P2/Photon 2), this log may be missing
+     * the latest data written to the log.
+     * 
+     * Must be called before setup().
+     */
+    DeviceInfoLedger &withRetainedBuffer(uint8_t *retainedBuffer, size_t retainedBufferSize) {
+        this->retainedBuffer = retainedBuffer;
+        this->retainedBufferSize = retainedBufferSize;
+        return *this;
+    }
+
+    /**
+     * @brief Perform setup operations; call this from global application setup()
+     * 
+     * You typically use DeviceInfoLedger::instance().setup();
+     * 
+     * This must only be called once at boot and not again. You cannot use this to reconfigure settings!
+     */
+    void setup();
+    /**
+     * @brief Perform application loop operations; call this from global application loop()
+     * 
+     * You typically use DeviceInfoLedger::instance().loop();
+     */
+    void loop();
 
     /**
      * @brief Set the local config log filters from a static array of LogCategoryFilter
@@ -357,7 +644,34 @@ public:
      * @return bool true if successfully set
      */
     bool setLocalConfigIncludeTower(bool value) { return setLocalConfigBool("includeTower", value); };
-    
+
+    /**
+     * @brief Convert a string like LOG_LEVEL_INFO into its numeric equivalent 
+     * 
+     * @param levelStr The string (case-sensitive)
+     * @return LogLevel numeric log level corresponding to the constant
+     * 
+     * Note that it really only searches for case-sensitive "INFO", "TRACE", etc. 
+     */
+    LogLevel stringToLogLevel(const char *levelStr) const;
+
+
+    /**
+     * @brief Convert a log level value (like LOG_LEVEL_INFO) to a string
+     * 
+     * @param level 
+     * @return const char* string string such as "INFO". 
+     */
+    const char *logLevelToString(LogLevel level) const;
+
+    /**
+     * @brief Get the log level settings
+     * 
+     * @param level 
+     * @param filters 
+     */
+    void getLogLevelFilters(LogLevel &level, LogCategoryFilters &filters) const;
+
     /**
      * @brief Called by DeviceInfoLedgerLogHandler to handle log messages
      * 
@@ -398,32 +712,7 @@ protected:
      */
     DeviceInfoLedger& operator=(const DeviceInfoLedger&) = delete;
 
-    /**
-     * @brief Convert a string like LOG_LEVEL_INFO into its numeric equivalent 
-     * 
-     * @param levelStr The string (case-sensitive)
-     * @return LogLevel numeric log level corresponding to the constant
-     * 
-     * Note that it really only searches for case-sensitive "INFO", "TRACE", etc. 
-     */
-    LogLevel stringToLogLevel(const char *levelStr) const;
 
-
-    /**
-     * @brief Convert a log level value (like LOG_LEVEL_INFO) to a string
-     * 
-     * @param level 
-     * @return const char* string string such as "INFO". 
-     */
-    const char *logLevelToString(LogLevel level) const;
-
-    /**
-     * @brief Get the log level settings
-     * 
-     * @param level 
-     * @param filters 
-     */
-    void getLogLevelFilters(LogLevel &level, LogCategoryFilters &filters) const;
 
     /**
      * @brief Configure the log handler with the current settings in logLevel and logFilter
@@ -446,43 +735,12 @@ protected:
     void updateConfig();
 
     /**
-     * @brief The current default config from the cloud
-     */
-    LedgerData defaultConfig;
-
-    /**
-     * @brief Local configuration (set by JSON or accessors)
-     */
-    LedgerData localConfig;
-    
-    /**
-     * @brief The current device override config from the cloud
-     */
-    LedgerData deviceConfig;
-
-    /**
      * @brief Name of the info ledger
      * 
      * Change name using withInfoLedgerName() (before setup).
      */
     String infoLedgerName = "device-info";
 
-
-    /**
-     * @brief Name of the default config ledger
-     * 
-     * Enable the ledger using withConfigDefaultLedgerEnabled (before setup),
-     * Change name using withConfigDefaultLedgerName() (before setup).
-     */
-    String configDefaultLedgerName = "device-info-defaults"; //
-
-    /**
-     * @brief Name of the device-specific config override ledger
-     * 
-     * Enable the ledger using withConfigDeviceLedgerEnabled (before setup),
-     * Change name using withConfigDeviceLedgerName() (before setup).
-     */
-    String configDeviceLedgerName = "device-info-config"; 
 
     /**
      * @brief Retained buffer for lastRunLog and other purposes. 
@@ -522,16 +780,6 @@ protected:
      * @brief Whether to save data to the connection log
      */
     bool writeToConnectionLog = true;
-
-    /**
-     * @brief Flag if config defaults ledger is enabled
-     */
-    bool configDefaultLedgerEnabled = false;
-
-    /**
-     * @brief Flags if config device-specific overrides are enabled
-     */
-    bool configDeviceLedgerEnabled = false;
 
     /**
      * @brief Internal state, true if Cellular.ready() returned true
@@ -594,15 +842,7 @@ protected:
      */
     Ledger infoLedger;
 
-    /**
-     * @brief Ledger default configuration, initialized during setup if enabled
-     */
-    Ledger configDefaultLedger;
-
-    /**
-     * @brief Ledger device-specific override configuration, initialized during setup if enabled
-     */
-    Ledger configDeviceLedger;
+    
 #endif // UNITTEST
 
     /**
