@@ -5,6 +5,14 @@ This library perform two separate but related things:
 - Store cloud-based configuration for devices
 - Store Particle device log data and device information in Ledger
 
+## Cloud-based configuration
+
+Using Ledger, this library supports a default configuration using a cloud-to-device ledger (scoped to a product, owner, or organization).
+
+It also supports an optional per-device configuration using a cloud-to-device device ledger (scoped to a device). The per-device configuration overrides specific values in the product default, making it easy to just change one setting and leave the others as the default value.
+
+The configuration, like Ledger, it JSON-based. 
+
 
 ## Configuration
 
@@ -37,9 +45,9 @@ const char localConfig[] =
     "\"includeDiag\": false,"
     "\"includeTower\": false,"
     "\"logLevel\": \"LOG_LEVEL_INFO\","
-    "\"logFilters\": ["
-      "{\"level\":\"LOG_LEVEL_TRACE\",\"category\":\"comm\"}"
-    "],"
+    "\"logFilters\": {"
+        "\"comm\": \"TRACE\""
+    "}"
 "}";
 ```
 
@@ -66,21 +74,21 @@ may result in a large number of ledger synchronization is the device is frequent
 
 #### logLevel (string)
 
-- `LOG_LEVEL_ALL`
-- `LOG_LEVEL_TRACE`
-- `LOG_LEVEL_INFO`
-- `LOG_LEVEL_WARN`
-- `LOG_LEVEL_ERROR`
-- `LOG_LEVEL_PANIC`
-- `LOG_LEVEL_NONE`
+| Constant           | Configuration String |
+| :----------------- | :------- |
+| `LOG_LEVEL_ALL`    | `ALL`    |
+| `LOG_LEVEL_TRACE`  | `TRACE`  | 
+| `LOG_LEVEL_INFO`   | `INFO`   |
+| `LOG_LEVEL_WARN`   | `WARN`   | 
+| `LOG_LEVEL_ERROR`  | `ERROR`  |
+| `LOG_LEVEL_PANIC`  | `PANIC`  |
+| `LOG_LEVEL_NONE`   | `NONE`   |
 
 
-#### logFilters (array)
+#### logFilters (object)
 
-This is a JSON representation of a logging configuration for `LogCategoryFilter`. Each array element is an object:
-
-- `category` (string) The logging category 
-- `level` (string) The logging level such as `LOG_LEVEL_INFO` 
+This is a JSON representation of a logging configuration for `LogCategoryFilter`. It is an object whose
+key is the category and value is the logging level.
 
 For example, given this code:
 
@@ -96,15 +104,9 @@ An equivalent JSON configuration would be:
 ```json
 {
     "logLevel": "LOG_LEVEL_WARN",
-    "logFilters": [
-        {
-            "category": "LOG_LEVEL_INFO",
-            "level": "app"
-        },
-        {
-            "category": "LOG_LEVEL_TRACE",
-            "level": "app.network"
-        }
-    ]
+    "logFilters": {
+        "app": "INFO",
+        "app.network": "TRACE"
+    }
 }
 ```

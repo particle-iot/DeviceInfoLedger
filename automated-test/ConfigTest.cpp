@@ -445,7 +445,73 @@ void runUnitTests() {
         assertInt(456, t1.getConfigInt("a"));
     }
 
-    
+    // Array merge
+    const char jsonConfig110[] = 
+    "{"
+        "\"a\": [1, 2]"
+    "}";
+    const char jsonConfig111[] = 
+    "{"
+        "\"a\": [3]"
+    "}";
+
+
+    {
+        DeviceInfoLedger t1;
+        Variant a;
+
+        t1.defaultConfig = LedgerData::fromJSON(jsonConfig110);
+
+        a = t1.getConfigVariant("a");
+        assertInt(2, a.size());
+        assertInt(1, a.at(0).toInt());
+        assertInt(2, a.at(1).toInt());
+
+
+        t1.deviceConfig = LedgerData::fromJSON(jsonConfig111);
+
+        a = t1.getConfigVariant("a");
+        assertInt(3, a.size());
+        assertInt(1, a.at(0).toInt());
+        assertInt(2, a.at(1).toInt());
+        assertInt(3, a.at(2).toInt());
+    }
+
+    // Object merge
+
+    const char jsonConfig120[] = 
+    "{"
+        "\"x\": {"
+            "\"a\": 123,"
+            "\"b\": true,"
+            "\"c\": \"test\""
+        "}"
+    "}";
+    const char jsonConfig121[] = 
+    "{"
+        "\"x\": {"
+            "\"a\": 456"
+        "}"
+    "}";
+
+    {
+        DeviceInfoLedger t1;
+        Variant x;
+
+        t1.defaultConfig = LedgerData::fromJSON(jsonConfig120);
+
+        x = t1.getConfigVariant("x");
+        assertInt(123, x.get("a").toInt());
+        assertInt(true, x.get("b").toBool());
+        assertString("test", x.get("c").toString().c_str());
+
+
+        t1.deviceConfig = LedgerData::fromJSON(jsonConfig121);
+
+        x = t1.getConfigVariant("x");
+        assertInt(456, x.get("a").toInt());
+    }
+
 
 }
 
