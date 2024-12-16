@@ -451,7 +451,7 @@ void runUnitTests() {
     "}";
     const char jsonConfig111[] = 
     "{"
-        "\"a\": [3]"
+        "\"a\": [2, 3]"
     "}";
 
 
@@ -470,10 +470,11 @@ void runUnitTests() {
        DeviceConfigLedger::instance().setDeviceConfig(LedgerData::fromJSON(jsonConfig111));
 
         a = DeviceConfigLedger::instance().getConfigVariant("a");
-        assertInt(3, a.size());
+        assertInt(4, a.size());
         assertInt(1, a.at(0).toInt());
         assertInt(2, a.at(1).toInt());
-        assertInt(3, a.at(2).toInt());
+        assertInt(2, a.at(2).toInt());
+        assertInt(3, a.at(3).toInt());
     }
 
     // Object merge
@@ -489,7 +490,8 @@ void runUnitTests() {
     const char jsonConfig121[] = 
     "{"
         "\"x\": {"
-            "\"a\": 456"
+            "\"a\": 456,"
+            "\"d\": 789"
         "}"
     "}";
 

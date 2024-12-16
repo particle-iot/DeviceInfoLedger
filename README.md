@@ -8,11 +8,17 @@ This library perform two separate but related things using two separate classes:
 You can use the cloud-based configuration without using the DeviceInfoLedger, if desired. 
 You can also use the DeviceInfoLedger with a local configuration, not using the remote configuration option.
 
-## Cloud-based configuration
+## Configuration
 
-Using Ledger, this library supports a default configuration using a cloud-to-device ledger (scoped to a product, owner, or organization).
+This library supports three levels of configuration, all of which are optional:
 
-It also supports an optional per-device configuration using a cloud-to-device device ledger (scoped to a device). The per-device configuration overrides specific values in the product default, making it easy to just change one setting and leave the others as the default value.
+- Local (on-device) configuration
+- Product, owner, or organization cloud-to-device ledger
+- Device-specific cloud-to-device ledger
+
+Using Ledger, this library supports a default configuration using a cloud-to-device ledger (scoped to a product, owner, or organization). This is good for making settings cloud-based instead of on-device, so you can change fleet settings without having to update code.
+
+It also supports an optional per-device configuration using a cloud-to-device device ledger (scoped to a device). The per-device configuration overrides specific values, making it easy to just change one setting and leave the others as the default values.
 
 Configuration support key (string) and value pairs, using types that can be represented in JSON and `Variant` including:
 
@@ -21,20 +27,99 @@ Configuration support key (string) and value pairs, using types that can be repr
 - floating point number values (`double`)
 - string values (`String`)
 
+For example say this is the product default configuration:
+
+```json
+{
+    "a": 123,
+    "b": false,
+    "c": "test"
+}
+```
+
+If you set the device configuration to, the value of `b` will be overridden but the values of `a` and `c` will remain the product default.
+
+```json
+{
+    "b": true
+}
+```
+
+
 Additionally, the top level can also include one-level deep of object and array types.
 
-For a top-level object, keys are merged within the same key name. 
+When an object is contained in the configuration, all values for the same key are merged so you can easily override
+specific sub-keys. With this product/owner/organization setting:
 
-For a top-level array, 
+```json
+{
+    "x": {
+        "a": 123,
+        "b": false,
+        "c": "test"
+    }
+}
+```
+
+And this per-device setting:
+
+```json
+{
+    "x": {
+        "a": 456,
+        "d": 789
+    }
+}
+```
+
+The configuration will act as follows:
+
+```json
+{
+    "x": {
+        "a": 456,
+        "b": false,
+        "c": "test",
+        "d": 789
+    }
+}
+```
+
+When an array is contained in the configuration, all array values for the key are appended. For example:
+
+```json
+{
+    "a": [1, 2]
+}
+```
+
+With a device-specific override:
+
+```json
+{
+    "a": [2, 3]
+}
+```
+
+The values are all appended in the order local, product/owner/organization, device. Duplicates are not removed!
+
+```json
+{
+    "a": [1, 2, 2, 3]
+}
+```
+
+Note that only one level of nested object or array is supported! If you nest two objects, the inner objects are not merged and will simply be replaced like a primitive value.
+
 
 Using cloud-based configuration is optional if you only want to use device log data and device information. These settings can be 
-configured locally on device, if desire. However, you may want to use both so you can control the log settings remotely from
+configured locally on device, if desired. However, you may want to use both so you can control the log settings remotely from
 the cloud-side.
 
 
-## Configuration
+## Device information ledger
 
-The following JSON structure is used for local configuration, default cloud configuration, and device-specific overrides, if those features are enabled.
+The following JSON structure is used for default cloud configuration, and device-specific overrides, if those features are enabled.
 
 ```json
 {
@@ -48,26 +133,7 @@ The following JSON structure is used for local configuration, default cloud conf
 }
 ```
 
-All fields must be specified in local configuration and default cloud configuration. In particular, the default cloud configuration is not merged
-with a local configuration; they are mutually exclusive. 
-
 Cloud-based device overrides can specify only the fields that need to be changed from the default configuration.
-
-
-```cpp
-const char localConfig[] = 
-"{"
-    "\"lastRunLog\": 1024,"
-    "\"connectionLog\": 2048,"
-    "\"includeGeneral\": true,"
-    "\"includeDiag\": false,"
-    "\"includeTower\": false,"
-    "\"logLevel\": \"LOG_LEVEL_INFO\","
-    "\"logFilters\": {"
-        "\"comm\": \"TRACE\""
-    "}"
-"}";
-```
 
 ### Detailed description of fields
 

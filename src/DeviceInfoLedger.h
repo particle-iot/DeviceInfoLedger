@@ -20,8 +20,7 @@ using namespace particle;
  * From global application setup you must call:
  * DeviceConfigLedger::instance().setup();
  * 
- * From global application loop you must call:
- * DeviceConfigLedger::instance().loop();
+ * Set the options using the withXXX() methods before calling setup().
  */
 class DeviceConfigLedger {
 public:
@@ -121,10 +120,10 @@ public:
 
     /**
      * @brief Call updateCallbacks
+     * 
+     * This is used internally after the ledger sync callback is called.
      */
     void callUpdateCallbacks();
-
-
 
     /**
      * @brief Perform setup operations; call this from global application setup()
@@ -142,6 +141,9 @@ public:
      * @param key Key to read in the top level of the configuration object
      * @param defaultValue Value to be returned if the key does not exist
      * @return true or false depending on the configuration setting or defaultValue.
+     * 
+     * The defaultValue parameter is optional. It may make more sense to set a local configuration with all of the default values
+     * so the defaults are stored in one place, rather than every place the value is accessed.
      */
     bool getConfigBool(const char *key, bool defaultValue = false) const { return getConfigVariant(key, Variant(defaultValue)).toBool(); };
 
@@ -160,6 +162,9 @@ public:
      * @param key Key to read in the top level of the configuration object
      * @param defaultValue Value to be returned if the key does not exist
      * @return true or false depending on the configuration setting or defaultValue.
+     * 
+     * The defaultValue parameter is optional. It may make more sense to set a local configuration with all of the default values
+     * so the defaults are stored in one place, rather than every place the value is accessed.
      */
     int getConfigInt(const char *key, int defaultValue = 0) const { return getConfigVariant(key, Variant(defaultValue)).toInt(); };
 
@@ -179,6 +184,9 @@ public:
      * @param key Key to read in the top level of the configuration object
      * @param defaultValue Value to be returned if the key does not exist
      * @return true or false depending on the configuration setting or defaultValue.
+     * 
+     * The defaultValue parameter is optional. It may make more sense to set a local configuration with all of the default values
+     * so the defaults are stored in one place, rather than every place the value is accessed.
      */
     double getConfigDouble(const char *key, double defaultValue = 0.0) const { return getConfigVariant(key, Variant(defaultValue)).toDouble(); };
 
@@ -197,6 +205,9 @@ public:
      * @param key Key to read in the top level of the configuration object
      * @param defaultValue Value to be returned if the key does not exist
      * @return true or false depending on the configuration setting or defaultValue.
+     * 
+     * The defaultValue parameter is optional. It may make more sense to set a local configuration with all of the default values
+     * so the defaults are stored in one place, rather than every place the value is accessed.
      */
     String getConfigString(const char *key, const char *defaultValue = "") const { return getConfigVariant(key, Variant(defaultValue)).toString(); };
 
@@ -215,6 +226,11 @@ public:
      * @param key Top level key in the ledger
      * @param defaultValue Value to be returned if the key does not exist
      * @return Variant Return Variant, see also getConfigBool, getConfigInt, ... that wrap this method
+     * 
+     * The defaultValue parameter is optional. It may make more sense to set a local configuration with all of the default values
+     * so the defaults are stored in one place, rather than every place the value is accessed.
+     * 
+     * This can be used for both primitive types like bool, int, string, etc. as well as VariantArray and VariantMap.
      */
     Variant getConfigVariant(const char *key, Variant defaultValue = {}) const;
 
@@ -316,7 +332,7 @@ protected:
      * Enable the ledger using withConfigDefaultLedgerEnabled (before setup),
      * Change name using withConfigDefaultLedgerName() (before setup).
      */
-    String configDefaultLedgerName = "device-info-defaults"; //
+    String configDefaultLedgerName = "device-info-defaults";
 
     /**
      * @brief Name of the device-specific config override ledger
@@ -350,7 +366,6 @@ protected:
 
     /**
      * @brief Callback functions to call when configuration is updated
-     * 
      */
     std::vector<std::function<void()>> updateCallbacks;
 
@@ -529,6 +544,10 @@ public:
      * Because of the way retained memory works on RTL872x devices (P2/Photon 2), this log may be missing
      * the latest data written to the log.
      * 
+     * This does not need to match the cloud setting, but the cloud setting can't be used to store
+     * more than the size of the retained buffer. Thus you will probably want to make the retained
+     * buffer as large as is reasonable for your application.
+     * 
      * Must be called before setup().
      */
     DeviceInfoLedger &withRetainedBuffer(uint8_t *retainedBuffer, size_t retainedBufferSize) {
@@ -536,6 +555,15 @@ public:
         this->retainedBufferSize = retainedBufferSize;
         return *this;
     }
+
+    /**
+     * @brief Set the local config log filters from a static array of LogCategoryFilter
+     * 
+     * @param level 
+     * @param filters 
+     * @return DeviceInfoLedger& 
+     */
+    DeviceInfoLedger &withLocalConfigLogLevel(LogLevel level = LOG_LEVEL_INFO, LogCategoryFilters filters = {});
 
     /**
      * @brief Perform setup operations; call this from global application setup()
@@ -549,17 +577,11 @@ public:
      * @brief Perform application loop operations; call this from global application loop()
      * 
      * You typically use DeviceInfoLedger::instance().loop();
+     * 
+     * The DeviceInfoLedger needs loop time to process the connectivity changes; the configuration
+     * library does not need a loop call.
      */
     void loop();
-
-    /**
-     * @brief Set the local config log filters from a static array of LogCategoryFilter
-     * 
-     * @param filterArray 
-     * @return true 
-     * @return false 
-     */
-    DeviceInfoLedger &withLocalConfigLogLevel(LogLevel level = LOG_LEVEL_INFO, LogCategoryFilters filters = {});
 
     /**
      * @brief Get the connectionLog (int) configuration setting from local settings or cloud configuration (default or device override)

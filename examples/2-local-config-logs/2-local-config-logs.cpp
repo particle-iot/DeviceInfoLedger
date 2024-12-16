@@ -7,21 +7,22 @@ SYSTEM_THREAD(ENABLED);
 
 SerialLogHandler logHandler(LOG_LEVEL_INFO);
 
+// If using the last run log, you need to allocate a retained buffer to store the last log
 retained uint8_t retainedLogs[2048];
 
 void setup() {
     // The next line is for debugging and waits for USB serial debug to connect for 10 seconds so you can see more early log messages
     waitFor(Serial.isConnected, 10000);
 
-    // This sets up remote configuration
-    DeviceConfigLedger::instance()
-        .withConfigDefaultLedgerName("device-info-defaults")
-        .withConfigDeviceLedgerName("device-info-config")
-        .setup();
-
-    // This sets up the device information in ledger
+    // It is possible to use entirely local configuration, and only 
     DeviceInfoLedger::instance()
         .withInfoLedgerName("device-info")
+        .withLocalConfigLastRunLog(1024)
+        .withLocalConfigConnectionLog(2048)
+        .withLocalConfigIncludeGeneral(true)
+        .withLocalConfigIncludeDiag(false)
+        .withLocalConfigIncludeTower(false)
+        .withLocalConfigLogLevel(LOG_LEVEL_INFO, {})
         .withRetainedBuffer(retainedLogs, sizeof(retainedLogs))
         .setup(); 
 
@@ -33,6 +34,5 @@ void setup() {
 }
 
 void loop() {
-    // Makes sure you call this to handle things that run from the application loop thread
     DeviceInfoLedger::instance().loop();
 }
