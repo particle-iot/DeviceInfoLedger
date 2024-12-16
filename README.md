@@ -111,10 +111,12 @@ The values are all appended in the order local, product/owner/organization, devi
 
 Note that only one level of nested object or array is supported! If you nest two objects, the inner objects are not merged and will simply be replaced like a primitive value.
 
-
 Using cloud-based configuration is optional if you only want to use device log data and device information. These settings can be 
 configured locally on device, if desired. However, you may want to use both so you can control the log settings remotely from
 the cloud-side.
+
+The [full DeviceInfoLedger API documentation](https://particle-iot.github.io/DeviceInfoLedger/class_device_config_ledger.html)
+can be found at the link, or in the docs directory of this repository.
 
 
 ## Device information ledger
@@ -138,6 +140,9 @@ Cloud-based device overrides can specify only the fields that need to be changed
 
 You can also set the settings locally, as a default, or in lieu of the cloud configuration. Local settings for 
 device information ledger can be done using JSON, or by calling individual methods like `withLastRunLog()`.
+
+The [full DeviceInfoLedger API documentation](https://particle-iot.github.io/DeviceInfoLedger/class_device_config_ledger.html)
+can be found at the link, or in the docs directory of this repository.
 
 ### Detailed description of fields
 
