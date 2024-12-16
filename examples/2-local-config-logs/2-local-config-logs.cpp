@@ -19,6 +19,7 @@ void setup() {
         .withInfoLedgerName("device-info")
         .withLocalConfigLastRunLog(1024)
         .withLocalConfigConnectionLog(2048)
+        .withLocalConfigLogAllConnections(false)
         .withLocalConfigIncludeGeneral(true)
         .withLocalConfigIncludeDiag(false)
         .withLocalConfigIncludeTower(false)

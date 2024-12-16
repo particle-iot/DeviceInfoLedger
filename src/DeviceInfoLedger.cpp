@@ -232,11 +232,8 @@ void DeviceInfoLedger::loop() {
     if (Particle.connected()) {
         if (!isCloudConnected) {
             isCloudConnected = true;
+            connectionCount++;
 
-            if (++connectionCount == 1) {
-                // First connection after boot
-                onFirstCloudConnection();
-            }
             onCloudConnection();
         }
     }
@@ -424,11 +421,12 @@ void DeviceInfoLedger::write(uint8_t c) {
 
 }
 
-void DeviceInfoLedger::onFirstCloudConnection() {
-}
-
 
 void DeviceInfoLedger::onCloudConnection() {
+
+    bool isFirstConnection = (connectionCount == 1);
+
+
 #ifndef UNITTEST
     Variant data;
 

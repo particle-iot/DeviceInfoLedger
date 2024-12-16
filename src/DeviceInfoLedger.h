@@ -622,6 +622,21 @@ public:
     DeviceInfoLedger &withLocalConfigLastRunLog(int value) { setLocalConfigInt("lastRunLog", value); return *this; };
 
     /**
+     * @brief Get the logAllConnections (bool) configuration setting from local settings or cloud configuration (default or device override)
+     * 
+     * @return bool 
+     */
+    bool getConfigLogAllConnections() const { return getConfigBool("logAllConnections", false); };
+
+    /**
+     * @brief Set a local configuration setting for logAllConnections. Default is false.
+     * 
+     * @param value to set
+     * @return bool true if successfully set
+     */
+    DeviceInfoLedger &withLocalConfigLogAllConnections(bool value) { setLocalConfigBool("logAllConnections", value); return *this; };
+
+    /**
      * 
      * @brief Get the includeGeneral (bool) configuration setting from local settings or cloud configuration (default or device override)
      * 
@@ -636,6 +651,7 @@ public:
      * @return bool true if successfully set
      */
     DeviceInfoLedger &withLocalConfigIncludeGeneral(bool value) { setLocalConfigBool("includeGeneral", value); return *this; };
+
 
     /**
      * @brief Get the includeDiag (bool) configuration setting from local settings or cloud configuration (default or device override)
@@ -738,11 +754,6 @@ protected:
      * @brief Configure the log handler with the current settings in logLevel and logFilter
      */
     void configureLogHandler();
-
-    /**
-     * @brief Called on the first cloud connection after boot
-     */
-    virtual void onFirstCloudConnection();
 
     /**
      * @brief Called on the any cloud connection completed

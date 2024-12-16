@@ -125,6 +125,7 @@ The following JSON structure is used for default cloud configuration, and device
 {
     "lastRunLog": 1024,
     "connectionLog": 2048,
+    "logAllConnections": false,
     "includeGeneral": true,
     "includeDiag": true,
     "includeTower": true,
@@ -135,9 +136,12 @@ The following JSON structure is used for default cloud configuration, and device
 
 Cloud-based device overrides can specify only the fields that need to be changed from the default configuration.
 
+You can also set the settings locally, as a default, or in lieu of the cloud configuration. Local settings for 
+device information ledger can be done using JSON, or by calling individual methods like `withLastRunLog()`.
+
 ### Detailed description of fields
 
-#### lastRunLog
+#### lastRunLog (int)
 
 The last run log is the latest log messages prior to the most recent reboot. This can be useful for troubleshooting device resets.
 
@@ -147,13 +151,38 @@ can be lower on some platforms.
 The last run log is stored in retained memory. This is specified in the application source because it's allocated by the compiler,
 so the actual run log will be the lesser of lastRunLog and the value stored in the source.
 
-On RTL872x devices (P2, Photon 2), the most recent log entries may not be available if a system panic has occurred.
+On RTL872x devices (P2, Photon 2, M-SoM), the most recent log entries may not be available if a system panic has occurred.
 
-#### connectionLog
+#### connectionLog (int)
 
 The connection log is the most recent messages from boot until successfully cloud connected on the first connection after
 reboot (default) or after every cloud disconnect (if logAllConnections is true). Note that logging every disconnection
 may result in a large number of ledger synchronization is the device is frequently disconnecting from the cloud.
+
+#### logAllConnections (bool)
+
+#### includeGeneral (bool)
+
+Include general information. Default: false.
+
+This currently only includes `sysver`, the Device OS version.
+
+#### includeDiag (bool)
+
+Include the device vitals information in ledger. Default: false
+
+#### includeTower (bool)
+
+Includes cellular tower information for the connected tower. Default: false
+
+This is stored in the `tower` key as an object with the following values:
+
+| Field | Description |
+| :---- | :--- |
+| `mcc` | Mobile country code |
+| `mnc` | Mobile network code |
+| `cid` | Cell identifier |
+| `lac` | Location area code |
 
 
 #### logLevel (string)
@@ -193,4 +222,12 @@ An equivalent JSON configuration would be:
         "app.network": "TRACE"
     }
 }
+```
+
+You can also configure log filters locally using the same style as Device OS log handlers:
+
+```cpp
+DeviceInfoLedger::instance().withLocalConfigLogLevel(LOG_LEVEL_INFO, {
+    { "app.devinfo", LOG_LEVEL_TRACE }
+});
 ```
