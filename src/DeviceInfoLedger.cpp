@@ -133,6 +133,9 @@ void DeviceInfoLedger::setup() {
     // Set up ledgers
     infoLedger = Particle.ledger(infoLedgerName);
 
+    // If the ledger is cached locally, the update callback won't be called
+    updateConfig();
+
     // Check retained buffer
     if (retainedBuffer && retainedBufferSize && retainedBufferSize > sizeof(RetainedBufferHeader)) {
         retainedHdr = (RetainedBufferHeader *)retainedBuffer;

@@ -236,3 +236,9 @@ DeviceInfoLedger::instance().withLocalConfigLogLevel(LOG_LEVEL_INFO, {
     { "app.devinfo", LOG_LEVEL_TRACE }
 });
 ```
+
+## Version history
+
+### 0.0.2 (2025-01-06)
+
+- Fixed a bug where the log handler would not be initialized if the ledger was already cached locally when using a cloud configuration ledger.
