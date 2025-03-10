@@ -145,6 +145,7 @@ $(function() {
 <div class="line">}</div>
 </div><!-- fragment --><p>Note that only one level of nested object or array is supported! If you nest two objects, the inner objects are not merged and will simply be replaced like a primitive value.</p>
 <p>Using cloud-based configuration is optional if you only want to use device log data and device information. These settings can be configured locally on device, if desired. However, you may want to use both so you can control the log settings remotely from the cloud-side.</p>
+<p>The <a href="https://particle-iot.github.io/DeviceInfoLedger/class_device_config_ledger.html">full DeviceInfoLedger API documentation</a> can be found at the link, or in the docs directory of this repository.</p>
 <h1>Device information ledger</h1>
 <p>The following JSON structure is used for default cloud configuration, and device-specific overrides, if those features are enabled.</p>
 <div class="fragment"><div class="line">{</div>
@@ -159,6 +160,7 @@ $(function() {
 <div class="line">}</div>
 </div><!-- fragment --><p>Cloud-based device overrides can specify only the fields that need to be changed from the default configuration.</p>
 <p>You can also set the settings locally, as a default, or in lieu of the cloud configuration. Local settings for device information ledger can be done using JSON, or by calling individual methods like <code>withLastRunLog()</code>.</p>
+<p>The <a href="https://particle-iot.github.io/DeviceInfoLedger/class_device_config_ledger.html">full DeviceInfoLedger API documentation</a> can be found at the link, or in the docs directory of this repository.</p>
 <h2>Detailed description of fields</h2>
 <h3>lastRunLog (int)</h3>
 <p>The last run log is the latest log messages prior to the most recent reboot. This can be useful for troubleshooting device resets.</p>
@@ -226,9 +228,18 @@ $(function() {
 <div class="fragment"><div class="line"><a class="code hl_function" href="class_device_info_ledger.html#a42de8141c03aab313bde20c04c820fd5">DeviceInfoLedger::instance</a>().<a class="code hl_function" href="class_device_info_ledger.html#a0eb0a90933144ea84d5eb6ac5edb045a">withLocalConfigLogLevel</a>(LOG_LEVEL_INFO, {</div>
 <div class="line">    { <span class="stringliteral">&quot;app.devinfo&quot;</span>, LOG_LEVEL_TRACE }</div>
 <div class="line">});</div>
-<div class="ttc" id="aclass_device_info_ledger_html_a0eb0a90933144ea84d5eb6ac5edb045a"><div class="ttname"><a href="class_device_info_ledger.html#a0eb0a90933144ea84d5eb6ac5edb045a">DeviceInfoLedger::withLocalConfigLogLevel</a></div><div class="ttdeci">DeviceInfoLedger &amp; withLocalConfigLogLevel(LogLevel level=LOG_LEVEL_INFO, LogCategoryFilters filters={})</div><div class="ttdoc">Set the local config log filters from a static array of LogCategoryFilter.</div><div class="ttdef"><b>Definition</b> DeviceInfoLedger.cpp:252</div></div>
+<div class="ttc" id="aclass_device_info_ledger_html_a0eb0a90933144ea84d5eb6ac5edb045a"><div class="ttname"><a href="class_device_info_ledger.html#a0eb0a90933144ea84d5eb6ac5edb045a">DeviceInfoLedger::withLocalConfigLogLevel</a></div><div class="ttdeci">DeviceInfoLedger &amp; withLocalConfigLogLevel(LogLevel level=LOG_LEVEL_INFO, LogCategoryFilters filters={})</div><div class="ttdoc">Set the local config log filters from a static array of LogCategoryFilter.</div><div class="ttdef"><b>Definition</b> DeviceInfoLedger.cpp:255</div></div>
 <div class="ttc" id="aclass_device_info_ledger_html_a42de8141c03aab313bde20c04c820fd5"><div class="ttname"><a href="class_device_info_ledger.html#a42de8141c03aab313bde20c04c820fd5">DeviceInfoLedger::instance</a></div><div class="ttdeci">static DeviceInfoLedger &amp; instance()</div><div class="ttdoc">Gets the singleton instance of this class, allocating it if necessary.</div><div class="ttdef"><b>Definition</b> DeviceInfoLedger.cpp:106</div></div>
-</div><!-- fragment --> </div></div><!-- PageDoc -->
+</div><!-- fragment --><h1>Version history</h1>
+<h2>0.0.3 (2025-03-10)</h2>
+<ul>
+<li>Added a <code>saveDeviceInfo(bool includeConnLog = true)</code> method that can be used force an upload at a time other than on cloud connection. You might do this from a Particle.function for example, to allow the logs be uploaded on demand.</li>
+</ul>
+<h2>0.0.2 (2025-01-06)</h2>
+<ul>
+<li>Fixed a bug where the log handler would not be initialized if the ledger was already cached locally when using a cloud configuration ledger. </li>
+</ul>
+</div></div><!-- PageDoc -->
 <a href="doxygen_crawl.html"/>
 </div><!-- contents -->
 <!-- start footer part -->

@@ -239,6 +239,10 @@ DeviceInfoLedger::instance().withLocalConfigLogLevel(LOG_LEVEL_INFO, {
 
 ## Version history
 
+### 0.0.3 (2025-03-10)
+
+- Added a `saveDeviceInfo(bool includeConnLog = true)` method that can be used force an upload at a time other than on cloud connection. You might do this from a Particle.function for example, to allow the logs be uploaded on demand.
+
 ### 0.0.2 (2025-01-06)
 
 - Fixed a bug where the log handler would not be initialized if the ledger was already cached locally when using a cloud configuration ledger.

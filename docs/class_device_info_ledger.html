@@ -155,6 +155,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a3e1b50e29e50c4713b5ca2391fdd9689" id="r_a3e1b50e29e50c4713b5ca2391fdd9689"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3e1b50e29e50c4713b5ca2391fdd9689">getLogLevelFilters</a> (LogLevel &amp;level, LogCategoryFilters &amp;filters) const</td></tr>
 <tr class="memdesc:a3e1b50e29e50c4713b5ca2391fdd9689"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the log level settings.  <br /></td></tr>
 <tr class="separator:a3e1b50e29e50c4713b5ca2391fdd9689"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab8b749b7d5d7103dfae0ddab0a8803bb" id="r_ab8b749b7d5d7103dfae0ddab0a8803bb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab8b749b7d5d7103dfae0ddab0a8803bb">saveDeviceInfo</a> (bool includeConnLog=true)</td></tr>
+<tr class="memdesc:ab8b749b7d5d7103dfae0ddab0a8803bb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Save the current device information and logs to ledger.  <br /></td></tr>
+<tr class="separator:ab8b749b7d5d7103dfae0ddab0a8803bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afbb37bf3cbf03dd4042e335ba3518fc5" id="r_afbb37bf3cbf03dd4042e335ba3518fc5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afbb37bf3cbf03dd4042e335ba3518fc5">write</a> (uint8_t c)</td></tr>
 <tr class="memdesc:afbb37bf3cbf03dd4042e335ba3518fc5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called by <a class="el" href="class_device_info_ledger_log_handler.html" title="Log handler class, used internally.">DeviceInfoLedgerLogHandler</a> to handle log messages.  <br /></td></tr>
 <tr class="separator:afbb37bf3cbf03dd4042e335ba3518fc5"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -676,6 +679,32 @@ Static Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <p>This class is a singleton and cannot be copied </p>
+
+</div>
+</div>
+<a id="ab8b749b7d5d7103dfae0ddab0a8803bb" name="ab8b749b7d5d7103dfae0ddab0a8803bb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab8b749b7d5d7103dfae0ddab0a8803bb">&#9670;&#160;</a></span>saveDeviceInfo()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void DeviceInfoLedger::saveDeviceInfo </td>
+          <td>(</td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>includeConnLog</em><span class="paramdefsep"> = </span><span class="paramdefval">true</span></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Save the current device information and logs to ledger. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">includeConnLog</td><td>Include the connection log</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>This is automatically done on each connection to the cloud, but this method allows it to be done manually on demand. You might call this from a Particle.function, for example. </p>
 
 </div>
 </div>

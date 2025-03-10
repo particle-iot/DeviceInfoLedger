@@ -711,6 +711,16 @@ public:
     void getLogLevelFilters(LogLevel &level, LogCategoryFilters &filters) const;
 
     /**
+     * @brief Save the current device information and logs to ledger
+     * 
+     * @param includeConnLog Include the connection log
+     * 
+     * This is automatically done on each connection to the cloud, but this method allows it
+     * to be done manually on demand. You might call this from a Particle.function, for example.
+     */
+    void saveDeviceInfo(bool includeConnLog = true);
+
+    /**
      * @brief Called by DeviceInfoLedgerLogHandler to handle log messages
      * 
      * @param c A character written to the logger

@@ -253,16 +253,15 @@ void DeviceInfoLedger::loop() {
 
 
 DeviceInfoLedger &DeviceInfoLedger::withLocalConfigLogLevel(LogLevel level, LogCategoryFilters filters) {
-    bool result;
     
-    result = setLocalConfigString("logLevel", logLevelToString(level));
+    setLocalConfigString("logLevel", logLevelToString(level));
 
     Variant map;
     for(LogCategoryFilter &filter: filters) {
         map.set(filter.category(), Variant(logLevelToString(filter.level())));
     }
     if (map.isMap()) {
-        result = setLocalConfigVariant("logFilters", map);
+        setLocalConfigVariant("logFilters", map);
     }
 
     return *this;
@@ -426,35 +425,40 @@ void DeviceInfoLedger::write(uint8_t c) {
 
 
 void DeviceInfoLedger::onCloudConnection() {
+    saveDeviceInfo(true);
+}
 
-    bool isFirstConnection = (connectionCount == 1);
+void DeviceInfoLedger::saveDeviceInfo(bool includeConnLog) {
 
+    // bool isFirstConnection = (connectionCount == 1);
 
 #ifndef UNITTEST
     Variant data;
 
-    // Save connection log
-    uint32_t offset = connectionLogOffset;
-    if (offset) {
-        size_t size = offset;
-        if (size > connectionLogSize) {
-            size = connectionLogSize;
-        }
-        // _deviceInfoLog.info("connectionLog offset=%lu size=%u", offset, size);
-
-        char *buf = new char[size + 1];
-        if (buf) {
-            for(size_t ii = 0; ii < size; ii++) {
-                buf[ii] = (char) connectionLogBuffer[(offset - size + ii) % connectionLogSize];
+    if (includeConnLog) {
+        // Save connection log
+        uint32_t offset = connectionLogOffset;
+        if (offset) {
+            size_t size = offset;
+            if (size > connectionLogSize) {
+                size = connectionLogSize;
             }
-            buf[size] = 0;
-            
-            data.set("connLog", buf);
+            // _deviceInfoLog.info("connectionLog offset=%lu size=%u", offset, size);
 
-            delete[] buf;
+            char *buf = new char[size + 1];
+            if (buf) {
+                for(size_t ii = 0; ii < size; ii++) {
+                    buf[ii] = (char) connectionLogBuffer[(offset - size + ii) % connectionLogSize];
+                }
+                buf[size] = 0;
+                
+                data.set("connLog", buf);
+
+                delete[] buf;
+            }
+            writeToConnectionLog = false;
+            connectionLogOffset = 0;
         }
-        writeToConnectionLog = false;
-        connectionLogOffset = 0;
     }
 
     // Save last run log
