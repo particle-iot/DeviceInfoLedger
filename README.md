@@ -239,6 +239,10 @@ DeviceInfoLedger::instance().withLocalConfigLogLevel(LOG_LEVEL_INFO, {
 
 ## Version history
 
+### 0.0.4 (2025-06-01)
+
+- Added an example 3-tester to test sending logs after waking up from sleep
+
 ### 0.0.3 (2025-03-10)
 
 - Added a `saveDeviceInfo(bool includeConnLog = true)` method that can be used force an upload at a time other than on cloud connection. You might do this from a Particle.function for example, to allow the logs be uploaded on demand.
